@@ -1,0 +1,4 @@
+obj/
+*.h.swp
+*.cpp.swp
+loweagent
