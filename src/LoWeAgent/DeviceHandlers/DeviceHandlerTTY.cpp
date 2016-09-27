@@ -4,7 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
-DeviceHandlerTTY::DeviceHandlerTTY(const pid_t pid, const char *openpath): DeviceHandler(pid, openpath, Log("tty"))
+DeviceHandlerTTY::DeviceHandlerTTY(const pid_t pid, const char *openpath): DeviceHandler(pid, openpath, "tty")
 {
 	_log.Info("Path:", _openpath);
 

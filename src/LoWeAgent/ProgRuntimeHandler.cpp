@@ -5,7 +5,7 @@
 #include "DeviceHandlerFactory.h"
 
 ProgRuntimeHandler::ProgRuntimeHandler(pid_t pid, int status, DeviceHandlerFactory &deviceHandlerFactory): 
-	_pid(pid), _status(status), _deviceHandlerFactory(deviceHandlerFactory), _log(Log("runtime"))
+	_pid(pid), _status(status), _deviceHandlerFactory(deviceHandlerFactory), _log(Log("runtime", pid))
 {
 	_exiting = false;
 }

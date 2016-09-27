@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 DeviceHandlerCatchAll::DeviceHandlerCatchAll(const pid_t pid, const char *openpath): 
-	DeviceHandler(pid, openpath, Log("catchall"))
+	DeviceHandler(pid, openpath, "catchall")
 {
 
 }

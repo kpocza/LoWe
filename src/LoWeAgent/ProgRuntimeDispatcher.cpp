@@ -103,25 +103,26 @@ bool ProgRuntimeDispatcher::Step()
 	}
 
 	int sig = WSTOPSIG(status);
+	bool skip = false;
 
 	if(event!= 0)
 	{
-		goto restart_tracee_with_sig_0;
+		sig = 0;
+		skip = true;
 	}
-	if(sig != (SIGTRAP | 0x80))
+	if(!skip && sig != (SIGTRAP | 0x80))
 	{
-		goto restart_tracee;
-	}
-	
-
-	if(!progRuntimeHandler->Step())
-	{
-		return false;
+		skip = true;
 	}
 
-restart_tracee_with_sig_0:
-	sig = 0;
-restart_tracee:
+	if(!skip)
+	{
+		if(!progRuntimeHandler->Step())
+		{
+			return false;
+		}
+	}
+
 	errno = 0;
 	ptrace(PTRACE_SYSCALL, pid, 0, sig);
 	if(!errno || errno == ESRCH)

@@ -6,12 +6,14 @@ DH=DeviceHandlers/
 
 _OBJ=loweagent.o DeviceHandler.o DeviceHandlerRegistry.o DeviceHandlerFactory.o ConfigHandler.o PidGuesser.o \
 		ProgRuntimeHandler.o ProgRuntimeDispatcher.o SocketCommunicator.o DeviceAvailabilityChecker.o \
+		ArgsParser.o \
 		$(DH)DeviceHandlerCatchAll.o $(DH)DeviceHandlerFrameBuffer.o $(DH)DeviceHandlerVirtConsole.o \
 		$(DH)DeviceHandlerTTY.o $(DH)DeviceHandlerALSA.o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
 INC=DeviceHandler.h DeviceHandlerFactory.h DeviceHandlerRegistry.h ConfigHandler.h PidGuesser.h \
 		ProgRuntimeHandler.h ProgRuntimeDispatcher.h SocketCommunicator.h Log.h DeviceAvailabilityChecker.h \
+		ArgsParser.h \
 		$(DH)DeviceHandlerCatchAll.h $(DH)DeviceHandlerFrameBuffer.h $(DH)DeviceHandlerVirtConsole.h \
 		$(DH)DeviceHandlerTTY.h $(DH)DeviceHandlerALSA.h
 

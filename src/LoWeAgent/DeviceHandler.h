@@ -7,7 +7,7 @@
 class DeviceHandler
 {
 	protected:
-		DeviceHandler(const pid_t pid, const char *openpath, const Log log);
+		DeviceHandler(const pid_t pid, const char *openpath, const string logName);
 
 	public:
 		virtual ~DeviceHandler();
@@ -21,7 +21,7 @@ class DeviceHandler
 	protected:
 		const std::string _openpath;
 		const pid_t _pid;
-		const Log _log;
+		Log _log;
 		
 		long _fd;
 		long _syscallbefore;

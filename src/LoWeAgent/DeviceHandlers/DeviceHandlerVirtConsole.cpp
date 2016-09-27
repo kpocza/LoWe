@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 DeviceHandlerVirtConsole::DeviceHandlerVirtConsole(const pid_t pid, const char *openpath): 
-	DeviceHandler(pid, openpath, Log("vc"))
+	DeviceHandler(pid, openpath, "vc")
 {
 	_log.Info("Path:", _openpath);
 }

@@ -4,10 +4,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-DeviceHandler::DeviceHandler(const int pid, const char *openpath, const Log log): 
-	_openpath(openpath), _pid(pid), _log(log) 
+DeviceHandler::DeviceHandler(const int pid, const char *openpath, const string logName): 
+	_openpath(openpath), _pid(pid), _log(Log(logName, pid)) 
 {
 	_syscallbefore = SYS_open;
+	_fd = -1;
 }
 
 DeviceHandler::~DeviceHandler()
@@ -17,6 +18,7 @@ DeviceHandler::~DeviceHandler()
 void DeviceHandler::SetFd(const long fd)
 {
 	_fd = fd;
+	_log.SetFd(fd);
 }
 
 void DeviceHandler::PokeData(long addr, char *data, int len) const {

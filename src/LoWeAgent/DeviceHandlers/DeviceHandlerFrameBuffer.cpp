@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 DeviceHandlerFrameBuffer::DeviceHandlerFrameBuffer(const pid_t pid, const char *openpath): 
-	DeviceHandler(pid, openpath, Log("fb"))
+	DeviceHandler(pid, openpath, "fb")
 {
 	int resx = 1280,resy=720,pixsize=4;
 

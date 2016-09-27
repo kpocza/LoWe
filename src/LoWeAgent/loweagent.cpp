@@ -5,6 +5,7 @@
 #include "DeviceAvailabilityChecker.h"
 #include "ProgRuntimeDispatcher.h"
 #include "Log.h"
+#include "ArgsParser.h"
 
 using namespace std;
 
@@ -14,12 +15,9 @@ int main(int argc, char **args)
 {
 	Log log("main");
 
-	if(argc!= 2) 
-	{
-		cout << "Usage: " << endl;
-		cout << "   loweagent prog_to_attach" << endl << endl;
+	ArgsParser argsParser(argc, args);
+	if(!argsParser.Parse())
 		return 1;
-	}
 
 	ConfigHandler configHandler("loweagent.config");
 	ConfigSettings configSettings = configHandler.LoadConfig();
@@ -30,7 +28,7 @@ int main(int argc, char **args)
 		return 1;
 	}
 
-	string appName(args[1]);
+	string appName = argsParser.GetAppName();
 	map<string, App>::const_iterator appIt = configSettings.apps.find(appName);
 
 	if(appIt == configSettings.apps.end())

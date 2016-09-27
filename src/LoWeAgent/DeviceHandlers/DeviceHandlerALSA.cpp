@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-DeviceHandlerALSA::DeviceHandlerALSA(const pid_t pid, const char *openpath): DeviceHandler(pid, openpath, Log("alsa"))
+DeviceHandlerALSA::DeviceHandlerALSA(const pid_t pid, const char *openpath): DeviceHandler(pid, openpath, "alsa")
 {
 	if(!strcmp(openpath, "/dev/snd/controlC0"))
 		_devType = Control;
