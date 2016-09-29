@@ -17,11 +17,11 @@ PidGuesser::PidGuesser(list<string> cmds)
 
 pid_t PidGuesser::GetPid()
 {
-	_dir = opendir("/proc");
-	if(_dir == NULL || errno)
-	{
-		return -1;
-	}
+//	_dir = opendir("/proc");
+//	if(_dir == NULL || errno)
+//	{
+//		return -1;
+//	}
 
 	pid_t pid;
 	do
@@ -31,7 +31,7 @@ pid_t PidGuesser::GetPid()
 	} 
 	while(pid == -1);
 
-	closedir(_dir);
+//	closedir(_dir);
 
 	return pid;
 }

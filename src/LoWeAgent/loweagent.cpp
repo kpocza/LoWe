@@ -55,6 +55,7 @@ int main(int argc, char **args)
 	 		cout << fixupScript << endl;
 			log.Info("Executing script as root");
 			deviceAvailabilityChecker.ExecuteFixupScript();
+			log.Info("Script done. Please rerun loweagent.");
 		}
 		return 1;
 	}
