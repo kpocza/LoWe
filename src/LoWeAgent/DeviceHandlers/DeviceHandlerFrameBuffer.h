@@ -17,5 +17,4 @@ class DeviceHandlerFrameBuffer : public DeviceHandler
 		struct fb_con2fbmap _fb_con2fbmap;
 		long _ioctlop;
 		long _ioctladdr;
-
 };

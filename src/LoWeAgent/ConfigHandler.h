@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 #include <map>
+#include <limits.h>
 
 using namespace std;
 
@@ -35,5 +36,8 @@ class ConfigHandler
 		const ConfigSettings LoadConfig();
 
 	private: 
+		bool DetermineConfigPath();
+
 		const char *_path;
+		char _fullPath[PATH_MAX];
 };

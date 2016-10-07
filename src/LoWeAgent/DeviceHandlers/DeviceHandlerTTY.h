@@ -20,6 +20,6 @@ class DeviceHandlerTTY : public DeviceHandler
 
 		vt_stat _vt_stat;
 		vt_mode _vt_mode;
-		long _kdmode;
-		long _kbmode;
+		int _kdmode;
+		int _kbmode;
 };

@@ -2,10 +2,7 @@
 #include "Log.h"
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
 #include <string>
-#include <fstream>
-#include <sstream>
 #include "Log.h"
 
 using namespace std;
@@ -17,12 +14,6 @@ PidGuesser::PidGuesser(list<string> cmds)
 
 pid_t PidGuesser::GetPid()
 {
-//	_dir = opendir("/proc");
-//	if(_dir == NULL || errno)
-//	{
-//		return -1;
-//	}
-
 	pid_t pid;
 	do
 	{
@@ -31,21 +22,8 @@ pid_t PidGuesser::GetPid()
 	} 
 	while(pid == -1);
 
-//	closedir(_dir);
-
 	return pid;
 }
-
-
-bool PidGuesser::IsNumeric(const char *chars) 
-{
-	for(;*chars;chars++) {
-		if(*chars < '0' || *chars > '9')
-			return false;
-	}
-	return true;
-}
-
 
 pid_t PidGuesser::Findpid()
 {
@@ -74,44 +52,6 @@ pid_t PidGuesser::Findpid()
 	}	
 
 	pclose(fp);
-
-	return -1;
-/*	struct dirent* de;
-
-	rewinddir(_dir);
-	Log log("fp");
-	log.Info("start");
-	log.Info(errno);
-	while((de = readdir(_dir)))
-	{
-		if(errno)
-		{
-			log.Info(errno);
-			break;
-		}
-		if(de->d_type!= DT_DIR)
-			continue;
-
-		if(!IsNumeric(de->d_name))
-			continue;
-
-		string cmdlinePath = "/proc/" + string(de->d_name) + "/cmdline";
-		string firstLine, procName;
-
-		ifstream cmdFile(cmdlinePath);
-		if(!getline(cmdFile, procName, '\0'))
-		{
-			cmdFile.close();
-			break;
-		}
-		cmdFile.close();
-
-		for(list<string>::const_iterator i = _cmds.begin();i!= _cmds.end();i++)
-		{
-			if(procName == *i)
-				return atoi(de->d_name);
-		}
-	}*/
 
 	return -1;
 }

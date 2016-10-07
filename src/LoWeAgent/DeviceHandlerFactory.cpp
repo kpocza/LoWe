@@ -4,6 +4,7 @@
 #include "DeviceHandlerTTY.h"
 #include "DeviceHandlerALSA.h"
 #include "DeviceHandlerCatchAll.h"
+#include "DeviceHandlerMice.h"
 #include <string.h>
 #include <iostream>
 
@@ -69,6 +70,8 @@ DeviceHandler *DeviceHandlerFactory::CreateInternal(const char *path, const stri
 		return new DeviceHandlerTTY(pid, path);
 	if(id == "alsa")
 		return new DeviceHandlerALSA(pid, path);
+	if(id == "mice")
+		return new DeviceHandlerMice(pid, path);
 
 	return NULL;
 }

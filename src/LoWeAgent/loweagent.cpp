@@ -19,7 +19,7 @@ int main(int argc, char **args)
 	if(!argsParser.Parse())
 		return 1;
 
-	ConfigHandler configHandler("loweagent.config");
+	ConfigHandler configHandler("loweagent.conf");
 	ConfigSettings configSettings = configHandler.LoadConfig();
 
 	if(!configSettings.ok) 

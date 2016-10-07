@@ -3,6 +3,7 @@
 #include "DeviceHandlerTTY.h"
 #include <string.h>
 #include <unistd.h>
+#include <asm-generic/ioctls.h>
 
 DeviceHandlerTTY::DeviceHandlerTTY(const pid_t pid, const char *openpath): DeviceHandler(pid, openpath, "tty")
 {
@@ -10,7 +11,7 @@ DeviceHandlerTTY::DeviceHandlerTTY(const pid_t pid, const char *openpath): Devic
 
 	memset(&_vt_stat, 0, sizeof(_vt_stat));
 	memset(&_vt_mode, 0, sizeof(_vt_mode));
-	_kdmode = 0;
+	_kdmode = KD_TEXT;
 	_kbmode = 0;
 }
 
@@ -87,10 +88,24 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 			_log.Info("KDSETMODE");
 			regs.orig_rax = -1;
 		}
+		else if(_ioctlop == KDGETMODE)
+		{
+			_log.Info("KDGETMODE");
+			regs.orig_rax = -1;
+		}
 		else if(_ioctlop == KDSKBMODE)
 		{
 			_log.Info("KDSKBMODE");
 			regs.orig_rax = -1;
+		}
+		else if(_ioctlop == TIOCLINUX)
+		{
+			_log.Info("TIOCLINUX");
+			regs.orig_rax = -1;
+		}
+		else
+		{
+			_log.Info("Unknown ioctl:", _ioctlop);
 		}
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
 	} 
@@ -108,7 +123,7 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 
 	if(_syscallbefore == SYS_ioctl) 
 	{
-		_log.Info("-= After open  =-");
+		_log.Info("-= After ioctl  =-");
 		if(_ioctlop == VT_GETSTATE)
 		{
 			_log.Info("VT_GETSTATE");
@@ -153,10 +168,21 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 			PeekData(_ioctladdr, (char *)&_kdmode, sizeof(_kdmode));
 			regs.rax = 0;
 		}
+		else if(_ioctlop == KDGETMODE)
+		{
+			_log.Info("KDGETMODE");
+			PokeData(_ioctladdr, (char *)&_kdmode, sizeof(_kdmode));
+			regs.rax = 0;
+		}
 		else if(_ioctlop == KDSKBMODE)
 		{
 			_log.Info("KDSKBMODE");
 			PeekData(_ioctladdr, (char *)&_kbmode, sizeof(_kbmode));
+			regs.rax = 0;
+		}
+		else if(_ioctlop == TIOCLINUX)
+		{
+			_log.Info("TIOCLINUX");
 			regs.rax = 0;
 		}
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);

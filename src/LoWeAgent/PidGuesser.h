@@ -2,9 +2,6 @@
 
 #include <list>
 #include <string>
-#include <stdlib.h>
-#include <sys/user.h>
-#include <dirent.h>
 
 using namespace std;
 
@@ -16,8 +13,6 @@ class PidGuesser
 
 	private:
 		list<string> _cmds;
-		DIR* _dir;
 
-		bool IsNumeric(const char *chars); 
 		pid_t Findpid();
 };

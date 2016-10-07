@@ -53,7 +53,7 @@ If you want to try it yourself, please follow the following steps:
 
 ![starting programs](images/doc03_progstart.jpg "Starting programs")
 
-3. loweagent is not a rock solid application yet, so it is prepared to support some predefined applications, like mplayer. Please refer to loweagent.config.
+3. loweagent is not a rock solid application yet, so it is prepared to support some predefined applications, like mplayer. Please refer to loweagent.conf.
 
 4. Enter ```./loweagent mplayer``` command to execute LoWeAgent in mplayer mode. It will detect if all devices are available under /dev. Of course not since /dev has the rigid view presented above. Anything new here is bound to the current lxss session (after closing the last bash there will disappear). So LoWe will created them as root:
 

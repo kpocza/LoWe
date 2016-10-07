@@ -22,8 +22,21 @@ void DeviceHandler::SetFd(const long fd)
 }
 
 void DeviceHandler::PokeData(long addr, char *data, int len) const {
-	for(int i = 0;i < len;i+=sizeof(long)) {
+	int chunkSize = sizeof(long);
+	int chunksLen = (len/chunkSize)*chunkSize;
+	int restLen = len - chunksLen;
+	for(int i = 0;i < chunksLen;i+=chunkSize) {
 		ptrace(PTRACE_POKEDATA, _pid, addr + i, *(long *)(char *)&data[i]);
+	}
+
+	if(restLen > 0)
+	{
+		char lastChunk[chunkSize];
+		long lastData = ptrace(PTRACE_PEEKDATA, _pid, addr + chunksLen, 0);
+		*(long *)(&lastChunk) = lastData;
+		for(int i =0;i < restLen;i++)
+			lastChunk[i] = data[chunksLen + i];
+		ptrace(PTRACE_POKEDATA, _pid, addr + chunksLen, *(long *)(char *)&lastChunk);
 	}
 }
 

@@ -27,6 +27,8 @@ bool ProgRuntimeHandler::SpySyscallEnter()
 	int syscall = ptrace(PTRACE_PEEKUSER, _pid, sizeof(long)*ORIG_RAX);
 	_syscall = syscall;
 
+	_log.Debug("SYSCALL:", syscall);
+
 	ptrace(PTRACE_GETREGS, _pid, NULL, &regs);
 
 	if(syscall == SYS_open)

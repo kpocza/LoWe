@@ -1,6 +1,7 @@
 #include "ConfigHandler.h"
 #include <iostream>
 #include <sstream>
+#include <string.h>
 #include "Log.h"
 
 using namespace std;
@@ -18,9 +19,16 @@ const ConfigSettings ConfigHandler::LoadConfig()
 	configSettings.ok = false;
 	Log log("config");
 
+	if(!DetermineConfigPath())
+	{
+		log.Error("Unable to determine config file path");
+		return configSettings;
+	}
+	log.Debug("Opening config file:", _fullPath);
+
 	config_init(&cfg);
 
-	if(config_read_file(&cfg, _path) == CONFIG_FALSE)
+	if(config_read_file(&cfg, _fullPath) == CONFIG_FALSE)
 	{
 		log.Error("Line", config_error_line(&cfg), ", msg:", config_error_text(&cfg));
 		config_destroy(&cfg);
@@ -133,3 +141,14 @@ const ConfigSettings ConfigHandler::LoadConfig()
 
 	return configSettings;
 }
+
+bool ConfigHandler::DetermineConfigPath()
+{
+	readlink("/proc/self/exe", _fullPath, PATH_MAX-20);
+	char *dirEnd = strrchr(_fullPath, '/');
+	*(dirEnd+1) = '\0';
+	strcat(_fullPath, _path);
+
+	return true;
+}
+
