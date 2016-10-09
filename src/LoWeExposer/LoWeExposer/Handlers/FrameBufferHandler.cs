@@ -42,7 +42,7 @@ namespace LoWeExposer.Handlers
             _data = new byte[_size];
             _binaryReader = new BinaryReader(fs);
 
-            var bitmapSource = BitmapSource.Create(_width, _height, 0, 0, PixelFormats.Bgra32, null, _data, _stride);
+            var bitmapSource = BitmapSource.Create(_width, _height, 0, 0, PixelFormats.Bgr32, null, _data, _stride);
             _writeableBitmap = new WriteableBitmap(bitmapSource);
             var dispatcherTimer = new DispatcherTimer();
             dispatcherTimer.Tick += DispatcherTimer_Tick;

@@ -133,10 +133,9 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		else if(_ioctlop == VT_OPENQRY)
 		{
 			_log.Info("VT_OPENQRY");
-			int data[2];
-			PeekData(_ioctladdr, (char *)&data, 8);
-			data[0]=4;
-			PokeData(_ioctladdr, (char *)&data, 8);
+			int data;
+			data=3;
+			PokeData(_ioctladdr, (char *)&data, 4);
 
 			regs.rax = 0;
 		}

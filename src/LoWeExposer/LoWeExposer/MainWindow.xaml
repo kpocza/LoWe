@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LoWeExposer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="360" Width="640">
+        Title="Linux on Windows extender Exposer" Height="360" Width="640">
     <StackPanel>
         <Button x:Name="btnFrameBuffer" Click="btnFrameBuffer_Click">Framebuffer</Button>
         <Button x:Name="btnALSA" Click="btnALSA_Click">ALSA</Button>
+        <Button x:Name="btnMice" Click="btnMice_Click">Mouse support</Button>
     </StackPanel>
 </Window>

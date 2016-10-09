@@ -4,6 +4,8 @@ namespace LoWeExposer
 {
     public partial class MainWindow : Window
     {
+        private FrameBufferExposer _frameBufferExposer;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -11,13 +13,25 @@ namespace LoWeExposer
 
         private void btnFrameBuffer_Click(object sender, RoutedEventArgs e)
         {
-            var w = new FrameBufferExposer();
-            w.Show();
+            _frameBufferExposer = new FrameBufferExposer();
+            _frameBufferExposer.Show();
+            _frameBufferExposer.Closed += _frameBufferExposer_Closed;
         }
 
         private void btnALSA_Click(object sender, RoutedEventArgs e)
         {
-            var w = new AlsaExposer();
+            var alsaExposer = new AlsaExposer();
+            alsaExposer.Show();
+        }
+
+        private void _frameBufferExposer_Closed(object sender, System.EventArgs e)
+        {
+            _frameBufferExposer = null;
+        }
+
+        private void btnMice_Click(object sender, RoutedEventArgs e)
+        {
+            var w = new MiceExposer(_frameBufferExposer);
             w.Show();
         }
     }
