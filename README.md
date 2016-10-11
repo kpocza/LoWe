@@ -89,7 +89,7 @@ It will start waiting for the mplayer process to start.
 
 
 
-# Firefox on Window Maker on X.Org on Bash on Ubuntu on Window
+# Firefox on Window Maker on X.Org on Bash on Ubuntu on Windows
 
 With LoWe it's possible to run X programs without employing any third-party X servers.
 
