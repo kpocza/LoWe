@@ -14,9 +14,11 @@ namespace LoWeExposer
 
         private bool _mouseEnabled;
         private MiceExposer _miceExposer;
+        private bool _kbdEnabled;
+        private KbdExposer _kbdExposer;
         private bool _mouseCaptured;
         private Point _lastPosition;
-        private MiceState _miceState;
+        private readonly MiceState _miceState;
 
         public FrameBufferExposer()
         {
@@ -25,6 +27,7 @@ namespace LoWeExposer
             _mouseEnabled = false;
             _mouseCaptured = false;
             _miceState = new MiceState();
+            _kbdEnabled = false;
         }
 
         private void FrameBufferExposer_Loaded(object sender, EventArgs e)
@@ -42,7 +45,7 @@ namespace LoWeExposer
                         return;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show("Initialization error: " + ex);
                     Close();
@@ -57,6 +60,8 @@ namespace LoWeExposer
             this.capture.Source = null;
             this.capture.Source = writeableBitmap;
         }
+
+        #region Mouse support
 
         public void EnableMouseSupport(MiceExposer miceExposer)
         {
@@ -81,7 +86,7 @@ namespace LoWeExposer
                 {
                     _miceState.Reset();
                 }
-                
+
                 return;
             }
 
@@ -146,8 +151,46 @@ namespace LoWeExposer
         private void SetCursor(double x, double y)
         {
             var capturePoint = capture.PointToScreen(new Point(0, 0));
-            SetCursorPos((int)(x + capturePoint.X), (int)(y + capturePoint.Y));
+            SetCursorPos((int) (x + capturePoint.X), (int) (y + capturePoint.Y));
         }
+
+        #endregion
+
+        #region Keyboard support
+
+        public void EnableKeyboardSupport(KbdExposer kbdExposer)
+        {
+            _kbdExposer = kbdExposer;
+            _kbdEnabled = true;
+
+            this.KeyDown += FrameBufferExposer_KeyDown;
+            this.KeyUp += FrameBufferExposer_KeyUp;
+        }
+
+        private void FrameBufferExposer_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (!_kbdEnabled)
+                return;
+
+            var virtualKey = (uint)KeyInterop.VirtualKeyFromKey(e.Key);
+            var scanCode = MapVirtualKey(virtualKey, 0);
+            _kbdExposer.KeyDownPerformed((byte)scanCode);
+        }
+
+        private void FrameBufferExposer_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (!_kbdEnabled)
+                return;
+
+            var virtualKey = (uint)KeyInterop.VirtualKeyFromKey(e.Key);
+            var scanCode = MapVirtualKey(virtualKey, 0);
+            _kbdExposer.KeyUpPerformed((byte)scanCode);
+        }
+
+        [DllImport("user32.dll")]
+        private static extern uint MapVirtualKey(uint uCode, uint uMapType);
+
+        #endregion
     }
 }
 

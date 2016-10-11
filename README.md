@@ -87,3 +87,13 @@ It will start waiting for the mplayer process to start.
 
 ![exposing](images/doc07_exposer.jpg "Exposing")
 
+
+
+# Firefox on Window Maker on X.Org on Bash on Ubuntu on Window
+
+With LoWe it's possible to run X programs without employing any third-party X servers.
+
+It's ~~a~~~~~~ ~~bit~~ very buggy, but works. Detailed description and reliability improvements come later.
+
+![xwmaker](images/doc08_x.jpg "X wmaker")
+
