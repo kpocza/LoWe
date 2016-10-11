@@ -5,6 +5,7 @@
 #include "DeviceHandlerALSA.h"
 #include "DeviceHandlerCatchAll.h"
 #include "DeviceHandlerMice.h"
+#include "DeviceHandlerKeyboard.h"
 #include <string.h>
 #include <iostream>
 
@@ -72,6 +73,8 @@ DeviceHandler *DeviceHandlerFactory::CreateInternal(const char *path, const stri
 		return new DeviceHandlerALSA(pid, path);
 	if(id == "mice")
 		return new DeviceHandlerMice(pid, path);
+	if(id == "kbd")
+		return new DeviceHandlerKeyboard(pid, path);
 
 	return NULL;
 }

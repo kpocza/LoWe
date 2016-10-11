@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -8,20 +10,22 @@ using System.Threading;
 
 namespace LoWeExposer.Handlers
 {
-    class MiceHandler
+    class KbdHandler
     {
         private readonly int _port;
         private readonly ILineLogger _lineLogger;
         private BackgroundWorker _backgroundWorker;
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _cancellationToken;
-        private MiceState _currentState;
-        private MiceState _lastReadState;
+        private readonly Queue<byte> _keyData;
+        private readonly object _lockObj;
 
-        public MiceHandler(int port, ILineLogger lineLogger)
+        public KbdHandler(int port, ILineLogger lineLogger)
         {
             _port = port;
             _lineLogger = lineLogger;
+            _keyData = new Queue<byte>();
+            _lockObj = new object();
         }
 
         public void Start()
@@ -35,14 +39,31 @@ namespace LoWeExposer.Handlers
 
         }
 
+        public void KeyDownPerformed(byte scanCode)
+        {
+            lock (_lockObj)
+            {
+                if(_keyData.Count > 10)
+                    _keyData.Clear();
+
+                _keyData.Enqueue(scanCode);
+            }
+        }
+
+        public void KeyUpPerformed(byte scanCode)
+        {
+            lock (_lockObj)
+            {
+                if (_keyData.Count > 10)
+                    _keyData.Clear();
+
+                _keyData.Enqueue((byte) (scanCode | 0x80));
+            }
+        }
+
         public void Stop()
         {
             _cancellationTokenSource.Cancel();
-        }
-
-        public void SetState(MiceState miceState)
-        {
-            _currentState = miceState.Clone();
         }
 
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -64,9 +85,9 @@ namespace LoWeExposer.Handlers
                         continue;
                     }
 
-                    if (IsOperation(opCode, "MICE"))
+                    if (IsOperation(opCode, "KEYB"))
                     {
-                        WriteAll(networkStream, Encoding.ASCII.GetBytes("ECIM"));
+                        WriteAll(networkStream, Encoding.ASCII.GetBytes("BYEK"));
                         networkStream.Close();
                         _lineLogger.LogLine("Socket check");
                         break;
@@ -81,31 +102,34 @@ namespace LoWeExposer.Handlers
                         if (!isInititalized)
                             break;
 
-                        var respData = new byte[1 + 2 * 4];
-                        if (_currentState == null)
+                        var lenData = new byte[4];
+                        if (!ReadAll(networkStream, lenData))
+                            break;
+                        int len = BitConverter.ToInt32(lenData, 0);
+
+                        byte[] array;
+                        lock (_lockObj)
                         {
-                            respData[0] = 0xff;
-                            WriteAll(networkStream, respData);
-                            continue;
+                            var items = new List<byte>();
+
+                            while (_keyData.Count > 0 && items.Count < len)
+                            {
+                                items.Add(_keyData.Dequeue());
+                            }
+                            array = items.ToArray();
+                            _keyData.Clear();
                         }
 
-                        var actualCurrentState = _currentState.Clone();
-                        if (_lastReadState == null)
-                            _lastReadState = actualCurrentState;
-
-                        int xdiff = actualCurrentState.X - _lastReadState.X;
-                        int ydiff = actualCurrentState.Y - _lastReadState.Y;
-
-                        respData[0] = (byte) ((actualCurrentState.LeftButtonDown ? 1 : 0) +
-                                              (actualCurrentState.RightButtonDown ? 2 : 0));
-                        Array.Copy(BitConverter.GetBytes(xdiff), 0, respData, 1, 4);
-                        Array.Copy(BitConverter.GetBytes(ydiff), 0, respData, 5, 4);
-
-                        WriteAll(networkStream, respData);
-
-                        _lineLogger.LogLine("Mouse state sent to agent");
-
-                        _lastReadState = actualCurrentState;
+                        WriteAll(networkStream, BitConverter.GetBytes(array.Length));
+                        if (array.Length > 0)
+                        {
+                            WriteAll(networkStream, array);
+                            _lineLogger.LogLine($"Keyboard events sent to agent ({array.Length} items).");
+                        }
+                        else
+                        {
+                            _lineLogger.LogLine("No new keyboard events to be sent to the agent");
+                        }
                     }
                     else if (IsOperation(opCode, "CLOS"))
                     {

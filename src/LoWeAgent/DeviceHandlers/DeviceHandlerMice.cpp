@@ -243,7 +243,7 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 		if(_isEnabled)
 		{
 			_skipper++;
-			if(_skipper == 100)
+			if(_skipper == 50)
 			{
 				_skipper = 0;
 				if(_dataIdx == 0)
@@ -298,6 +298,10 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 				_dataIdx+= _readlen;
 				if(_dataIdx >= 4)
 					_dataIdx=0;
+			}
+			else
+			{
+				usleep(1000);
 			}
 		}
 		if(_willBeEnabled && _readlen == 1)

@@ -34,5 +34,11 @@ namespace LoWeExposer
             var w = new MiceExposer(_frameBufferExposer);
             w.Show();
         }
+
+        private void btnKbd_Click(object sender, RoutedEventArgs e)
+        {
+            var w = new KbdExposer(_frameBufferExposer);
+            w.Show();
+        }
     }
 }
