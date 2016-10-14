@@ -27,6 +27,7 @@ class DeviceHandler
 		long _syscallbefore;
 		long _syscallafter;
 
+		long GetTimeMillisec();
 		void PokeData(long addr, char *data, int len) const;
 		void PeekData(long addr, char *out, int len) const;
 		bool HasPermissions() const;

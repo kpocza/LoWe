@@ -22,8 +22,8 @@ class DeviceHandlerKeyboard : public DeviceHandler
 		long _readaddr;
 		long _readlen;
 
-		long _skipper;
 		bool _isEnabled;
+		long _lastMillisec;
 		int _port = 12347;
 		SocketCommunicator _socketCommunicator;
 

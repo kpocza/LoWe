@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
@@ -15,13 +16,16 @@ namespace LoWeExposer.Handlers
         private BackgroundWorker _backgroundWorker;
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _cancellationToken;
-        private MiceState _currentState;
+        private Queue<MiceState> _states;
         private MiceState _lastReadState;
+        private object _lockObj;
 
         public MiceHandler(int port, ILineLogger lineLogger)
         {
             _port = port;
             _lineLogger = lineLogger;
+            _states = new Queue<MiceState>();
+            _lockObj = new object();
         }
 
         public void Start()
@@ -42,7 +46,10 @@ namespace LoWeExposer.Handlers
 
         public void SetState(MiceState miceState)
         {
-            _currentState = miceState.Clone();
+            lock (_lockObj)
+            {
+                _states.Enqueue(miceState);
+            }
         }
 
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -81,31 +88,58 @@ namespace LoWeExposer.Handlers
                         if (!isInititalized)
                             break;
 
-                        var respData = new byte[1 + 2 * 4];
-                        if (_currentState == null)
+                        var respData = new byte[1 + 2*4];
+                        lock (_lockObj)
                         {
-                            respData[0] = 0xff;
-                            WriteAll(networkStream, respData);
-                            continue;
+                            if (_states.Count == 0)
+                            {
+                                if (_lastReadState!= null)
+                                {
+                                    respData[0] = (byte) ((_lastReadState.LeftButtonDown ? 1 : 0) +
+                                                          (_lastReadState.RightButtonDown ? 2 : 0));
+                                }
+                            }
+                            else
+                            {
+                                var actualCurrentState = _states.Dequeue();
+                                if (_lastReadState == null)
+                                {
+                                    _lastReadState = actualCurrentState;
+                                }
+                                else
+                                {
+                                    while (_states.Count > 0)
+                                    {
+                                        var peekItem = _states.Peek();
+
+                                        if (peekItem.LeftButtonDown != _lastReadState.LeftButtonDown ||
+                                            peekItem.RightButtonDown != _lastReadState.RightButtonDown)
+                                            break;
+
+                                        if (Math.Abs(actualCurrentState.X - _lastReadState.X) >= 50 ||
+                                            Math.Abs(actualCurrentState.Y - _lastReadState.Y) >= 50)
+                                            break;
+
+                                        actualCurrentState = _states.Dequeue();
+                                    }
+
+                                }
+
+                                int xdiff = actualCurrentState.X - _lastReadState.X;
+                                int ydiff = actualCurrentState.Y - _lastReadState.Y;
+
+                                respData[0] = (byte) ((actualCurrentState.LeftButtonDown ? 1 : 0) +
+                                                      (actualCurrentState.RightButtonDown ? 2 : 0));
+                                Array.Copy(BitConverter.GetBytes(xdiff), 0, respData, 1, 4);
+                                Array.Copy(BitConverter.GetBytes(ydiff), 0, respData, 5, 4);
+
+                                _lastReadState = actualCurrentState;
+                            }
                         }
-
-                        var actualCurrentState = _currentState.Clone();
-                        if (_lastReadState == null)
-                            _lastReadState = actualCurrentState;
-
-                        int xdiff = actualCurrentState.X - _lastReadState.X;
-                        int ydiff = actualCurrentState.Y - _lastReadState.Y;
-
-                        respData[0] = (byte) ((actualCurrentState.LeftButtonDown ? 1 : 0) +
-                                              (actualCurrentState.RightButtonDown ? 2 : 0));
-                        Array.Copy(BitConverter.GetBytes(xdiff), 0, respData, 1, 4);
-                        Array.Copy(BitConverter.GetBytes(ydiff), 0, respData, 5, 4);
 
                         WriteAll(networkStream, respData);
 
                         _lineLogger.LogLine("Mouse state sent to agent");
-
-                        _lastReadState = actualCurrentState;
                     }
                     else if (IsOperation(opCode, "CLOS"))
                     {
@@ -163,6 +197,14 @@ namespace LoWeExposer.Handlers
         private void WriteAll(NetworkStream networkStream, byte[] data)
         {
             networkStream.Write(data, 0, data.Length);
+        }
+
+        public void ClearQueue()
+        {
+            lock (_lockObj)
+            {
+                _states.Clear();
+            }
         }
     }
 }

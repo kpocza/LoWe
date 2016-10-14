@@ -34,7 +34,7 @@ DeviceHandlerMice::DeviceHandlerMice(const pid_t pid, const char *openpath):
 	_resolution = 0;
 	_curCommand = -1;
 	_cmdAcked = false;
-	_skipper = 0;
+	_lastMillisec = 0;
 }
 
 bool DeviceHandlerMice::IsDeviceAvailable()
@@ -242,12 +242,12 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
 		if(_isEnabled)
 		{
-			_skipper++;
-			if(_skipper == 50)
+			long now = GetTimeMillisec();
+			if(now - _lastMillisec > 100 || _dataIdx!= 0)
 			{
-				_skipper = 0;
 				if(_dataIdx == 0)
 				{
+					_lastMillisec = now;
 					_resp.clear();
 					SendOpcode((char *)"READ");
 					char resp[1+2*4];
@@ -291,13 +291,15 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 						_resp.push_back(b1);
 						_resp.push_back(b2);
 						_resp.push_back(b3);
-						_resp.push_back(0xff);
+						_resp.push_back(0);
 					}
 				}
 
 				_dataIdx+= _readlen;
 				if(_dataIdx >= 4)
+				{
 					_dataIdx=0;
+				}
 			}
 			else
 			{

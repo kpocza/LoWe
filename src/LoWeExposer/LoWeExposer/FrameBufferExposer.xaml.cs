@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
@@ -19,6 +20,7 @@ namespace LoWeExposer
         private bool _mouseCaptured;
         private Point _lastPosition;
         private readonly MiceState _miceState;
+        private IntPtr _hKL;
 
         public FrameBufferExposer()
         {
@@ -29,6 +31,8 @@ namespace LoWeExposer
             _miceState = new MiceState();
             _kbdEnabled = false;
         }
+
+        #region Graphics
 
         private void FrameBufferExposer_Loaded(object sender, EventArgs e)
         {
@@ -55,11 +59,18 @@ namespace LoWeExposer
             }
         }
 
+        private void FrameBufferExposer_OnClosing(object sender, CancelEventArgs e)
+        {
+            _frameBufferHandler.Stop();
+        }
+
         private void Update(WriteableBitmap writeableBitmap)
         {
             this.capture.Source = null;
             this.capture.Source = writeableBitmap;
         }
+
+        #endregion
 
         #region Mouse support
 
@@ -76,7 +87,7 @@ namespace LoWeExposer
             this.capture.MouseLeave += Capture_MouseLeave;
         }
 
-        private void Capture_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Capture_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftAlt))
             {
@@ -85,6 +96,10 @@ namespace LoWeExposer
                 if (_mouseCaptured)
                 {
                     _miceState.Reset();
+                    _miceExposer.ClearQueue();
+                    _kbdExposer.KeyUpPerformed(0);
+                    _kbdExposer.KeyUpPerformed(29);
+                    _kbdExposer.KeyUpPerformed(56);
                 }
 
                 return;
@@ -94,7 +109,7 @@ namespace LoWeExposer
                 return;
 
             _miceState.LeftButtonDown = false;
-            _miceExposer.SetState(_miceState);
+            EnqueueState();
         }
 
         private void Capture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -103,7 +118,7 @@ namespace LoWeExposer
                 return;
 
             _miceState.LeftButtonDown = true;
-            _miceExposer.SetState(_miceState);
+            EnqueueState();
         }
 
         private void Capture_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -112,7 +127,7 @@ namespace LoWeExposer
                 return;
 
             _miceState.RightButtonDown = true;
-            _miceExposer.SetState(_miceState);
+            EnqueueState();
         }
 
         private void Capture_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -121,7 +136,7 @@ namespace LoWeExposer
                 return;
 
             _miceState.RightButtonDown = false;
-            _miceExposer.SetState(_miceState);
+            EnqueueState();
         }
 
         private void FrameBufferExposer_MouseMove(object sender, MouseEventArgs e)
@@ -134,7 +149,7 @@ namespace LoWeExposer
 
             _miceState.X = (int) (1280.0*pos.X/capture.RenderSize.Width);
             _miceState.Y = (int) (720.0*pos.Y/capture.RenderSize.Height);
-            _miceExposer.SetState(_miceState);
+            EnqueueState();
         }
 
         [DllImport("User32.dll")]
@@ -154,6 +169,11 @@ namespace LoWeExposer
             SetCursorPos((int) (x + capturePoint.X), (int) (y + capturePoint.Y));
         }
 
+        private void EnqueueState()
+        {
+            _miceExposer.AddState(_miceState.Clone());
+        }
+
         #endregion
 
         #region Keyboard support
@@ -162,6 +182,8 @@ namespace LoWeExposer
         {
             _kbdExposer = kbdExposer;
             _kbdEnabled = true;
+            _hKL = GetKeyboardLayout(0);
+
 
             this.KeyDown += FrameBufferExposer_KeyDown;
             this.KeyUp += FrameBufferExposer_KeyUp;
@@ -172,8 +194,7 @@ namespace LoWeExposer
             if (!_kbdEnabled)
                 return;
 
-            var virtualKey = (uint)KeyInterop.VirtualKeyFromKey(e.Key);
-            var scanCode = MapVirtualKey(virtualKey, 0);
+            var scanCode = ResolveScanCode(e);
             _kbdExposer.KeyDownPerformed((byte)scanCode);
         }
 
@@ -182,13 +203,21 @@ namespace LoWeExposer
             if (!_kbdEnabled)
                 return;
 
-            var virtualKey = (uint)KeyInterop.VirtualKeyFromKey(e.Key);
-            var scanCode = MapVirtualKey(virtualKey, 0);
+            var scanCode = ResolveScanCode(e);
             _kbdExposer.KeyUpPerformed((byte)scanCode);
         }
 
+        private uint ResolveScanCode(KeyEventArgs e)
+        {
+            var virtualKey = (uint)KeyInterop.VirtualKeyFromKey(e.Key != Key.System ? e.Key : e.SystemKey);
+            return MapVirtualKeyEx(virtualKey, 4, _hKL);
+        }
+
         [DllImport("user32.dll")]
-        private static extern uint MapVirtualKey(uint uCode, uint uMapType);
+        static extern IntPtr GetKeyboardLayout(uint idThread);
+
+        [DllImport("user32.dll")]
+        static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
 
         #endregion
     }

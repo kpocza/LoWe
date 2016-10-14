@@ -52,11 +52,16 @@ namespace LoWeExposer
             _lineCount++;
         }
 
-        internal void SetState(MiceState miceState)
+        internal void AddState(MiceState miceState)
         {
             _miceHandler.SetState(miceState);
 
             ((ILineLogger)this).LogLine($"X: {miceState.X}, Y: {miceState.Y}, L: {miceState.LeftButtonDown}, R: {miceState.RightButtonDown}");
+        }
+
+        internal void ClearQueue()
+        {
+            _miceHandler.ClearQueue();
         }
 
         void ILineLogger.LogLine(string line)

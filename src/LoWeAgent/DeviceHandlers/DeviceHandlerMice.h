@@ -34,7 +34,7 @@ class DeviceHandlerMice : public DeviceHandler
 		std::list<int> _req;
 		std::list<char> _resp;
 
-		int _skipper;
+		long _lastMillisec;
 
 		int _port = 12346;
 		SocketCommunicator _socketCommunicator;

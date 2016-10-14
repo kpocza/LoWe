@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:LoWeExposer"
         mc:Ignorable="d"
         Title="FrameBuffer Exposer" Height="760" Width="1280"
-        Loaded="FrameBufferExposer_Loaded">
+        Loaded="FrameBufferExposer_Loaded"
+        Closing="FrameBufferExposer_OnClosing">
     <Grid>
         <Image x:Name="capture" Stretch="UniformToFill"></Image>
     </Grid>

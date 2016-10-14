@@ -3,6 +3,8 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
+#include <math.h>
 
 DeviceHandler::DeviceHandler(const int pid, const char *openpath, const string logName): 
 	_openpath(openpath), _pid(pid), _log(Log(logName, pid)) 
@@ -94,5 +96,16 @@ string DeviceHandler::GetFixupScriptCore() const
 	result += "chmod 666 " + _openpath + "\n";	
 	
 	return result;
+}
+
+long DeviceHandler::GetTimeMillisec()
+{
+	struct timespec spec;
+	clock_gettime(CLOCK_REALTIME, &spec);
+
+	long s = (long)spec.tv_sec;
+	long ms = round(spec.tv_nsec / 1000000);
+
+	return 1000 * s + ms;
 }
 

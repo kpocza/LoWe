@@ -19,6 +19,7 @@ namespace LoWeExposer.Handlers
         private BinaryReader _binaryReader;
         private WriteableBitmap _writeableBitmap;
         private Action<WriteableBitmap> _update;
+        private DispatcherTimer _dispatcherTimer;
 
         public FrameBufferHandler(int width, int height, int bytesPerPixel)
         {
@@ -44,12 +45,17 @@ namespace LoWeExposer.Handlers
 
             var bitmapSource = BitmapSource.Create(_width, _height, 0, 0, PixelFormats.Bgr32, null, _data, _stride);
             _writeableBitmap = new WriteableBitmap(bitmapSource);
-            var dispatcherTimer = new DispatcherTimer();
-            dispatcherTimer.Tick += DispatcherTimer_Tick;
-            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 40);
-            dispatcherTimer.Start();
+            _dispatcherTimer = new DispatcherTimer();
+            _dispatcherTimer.Tick += DispatcherTimer_Tick;
+            _dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 40);
+            _dispatcherTimer.Start();
 
             return true;
+        }
+
+        public void Stop()
+        {
+            _dispatcherTimer?.Stop();
         }
 
         private string GuessPath()

@@ -10,7 +10,7 @@ DeviceHandlerKeyboard::DeviceHandlerKeyboard(const pid_t pid, const char *openpa
 {
 	_log.Info("Path:", _openpath);
 	_isEnabled = false;
-	_skipper = 0;
+	_lastMillisec = 0;
 }
 
 bool DeviceHandlerKeyboard::IsDeviceAvailable()
@@ -105,10 +105,10 @@ void DeviceHandlerKeyboard::ExecuteAfter(const long syscall, user_regs_struct &r
 		int size = 0;
 		if(_isEnabled)
 		{
-			_skipper++;
-			if(_skipper == 50)
+			long now = GetTimeMillisec();
+			if(now - _lastMillisec > 100)
 			{
-				_skipper = 0;
+				_lastMillisec = now;
 				SendOpcode((char *)"READ");
 				_log.Info("-= After read =-");
 				_socketCommunicator.Send((char *)&_readlen, 4);

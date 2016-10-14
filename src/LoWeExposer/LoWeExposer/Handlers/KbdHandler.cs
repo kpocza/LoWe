@@ -19,6 +19,7 @@ namespace LoWeExposer.Handlers
         private CancellationToken _cancellationToken;
         private readonly Queue<byte> _keyData;
         private readonly object _lockObj;
+        private byte _lastItem;
 
         public KbdHandler(int port, ILineLogger lineLogger)
         {
@@ -26,6 +27,7 @@ namespace LoWeExposer.Handlers
             _lineLogger = lineLogger;
             _keyData = new Queue<byte>();
             _lockObj = new object();
+            _lastItem = 0xff;
         }
 
         public void Start()
@@ -43,10 +45,7 @@ namespace LoWeExposer.Handlers
         {
             lock (_lockObj)
             {
-                if(_keyData.Count > 10)
-                    _keyData.Clear();
-
-                _keyData.Enqueue(scanCode);
+                EnqueueItem(scanCode);
             }
         }
 
@@ -54,11 +53,16 @@ namespace LoWeExposer.Handlers
         {
             lock (_lockObj)
             {
-                if (_keyData.Count > 10)
-                    _keyData.Clear();
-
-                _keyData.Enqueue((byte) (scanCode | 0x80));
+                EnqueueItem((byte)(scanCode | 0x80));
             }
+        }
+
+        private void EnqueueItem(byte item)
+        {
+            if(_lastItem != item)
+                _keyData.Enqueue(item);
+
+            _lastItem = item;
         }
 
         public void Stop()
