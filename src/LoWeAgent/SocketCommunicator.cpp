@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
+#include "Log.h"
 
 SocketCommunicator::SocketCommunicator()
 {
@@ -15,10 +16,14 @@ bool SocketCommunicator::Open(const string address, const int port)
 {
 	if(_opened)
 		return true;
+	Log log("socket");
 
 	_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if(errno)
+	if(_fd < 0)
+	{
+		log.Debug("Socket open errno:", errno);
 		return false;
+	}
 	
 	struct sockaddr_in addr;
 
@@ -26,10 +31,11 @@ bool SocketCommunicator::Open(const string address, const int port)
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = inet_addr(address.c_str());
 
-	connect(_fd, (const sockaddr *)&addr, sizeof(addr));
-	if(errno)
+	if(connect(_fd, (const sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+		log.Debug("Socket connect errno:", errno);
 		return false;
-
+	}
 	_opened = true;
 
 	return true;

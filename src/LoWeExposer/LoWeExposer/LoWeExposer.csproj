@@ -79,6 +79,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="Handlers\IFramebufferDrawer.cs" />
     <Compile Include="Handlers\KbdHandler.cs" />
     <Compile Include="Handlers\MiceHandler.cs" />
     <Compile Include="Handlers\MiceState.cs" />

@@ -8,6 +8,7 @@
 
         public int X { get; set; }
         public int Y { get; set; }
+        public int Wheel { get; set; }
 
         public void Reset()
         {
@@ -22,7 +23,8 @@
                 X = X,
                 Y = Y,
                 LeftButtonDown = LeftButtonDown,
-                RightButtonDown = RightButtonDown
+                RightButtonDown = RightButtonDown,
+                Wheel = Wheel
             };
         }
     }

@@ -54,7 +54,7 @@ namespace LoWeExposer
 
         internal void AddState(MiceState miceState)
         {
-            _miceHandler.SetState(miceState);
+            _miceHandler.AddState(miceState);
 
             ((ILineLogger)this).LogLine($"X: {miceState.X}, Y: {miceState.Y}, L: {miceState.LeftButtonDown}, R: {miceState.RightButtonDown}");
         }

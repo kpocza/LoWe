@@ -1,6 +1,5 @@
 #include "DeviceHandlerFactory.h"
 #include "DeviceHandlerFrameBuffer.h"
-#include "DeviceHandlerVirtConsole.h"
 #include "DeviceHandlerTTY.h"
 #include "DeviceHandlerALSA.h"
 #include "DeviceHandlerCatchAll.h"
@@ -65,8 +64,6 @@ DeviceHandler *DeviceHandlerFactory::CreateInternal(const char *path, const stri
 {
 	if(id == "fb")
 		return new DeviceHandlerFrameBuffer(pid, path);
-	if(id == "vc")
-		return new DeviceHandlerVirtConsole(pid, path);
 	if(id == "tty")
 		return new DeviceHandlerTTY(pid, path);
 	if(id == "alsa")

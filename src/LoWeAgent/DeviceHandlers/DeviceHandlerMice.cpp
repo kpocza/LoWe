@@ -250,8 +250,8 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 					_lastMillisec = now;
 					_resp.clear();
 					SendOpcode((char *)"READ");
-					char resp[1+2*4];
-					_socketCommunicator.Recv((char *)&resp, 9);
+					char resp[1+2*4+1];
+					_socketCommunicator.Recv((char *)&resp, 10);
 
 					if(resp[0] != (char)0xff)
 					{
@@ -288,10 +288,12 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 							b3 = 256-(char)ydiff;
 						}
 
+						char b4 = resp[9];
+
 						_resp.push_back(b1);
 						_resp.push_back(b2);
 						_resp.push_back(b3);
-						_resp.push_back(0);
+						_resp.push_back(b4);
 					}
 				}
 

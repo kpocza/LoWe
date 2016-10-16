@@ -10,6 +10,7 @@ class ArgsParser
 		ArgsParser(int argc, char **args);
 
 		bool Parse();
+		bool IsCatchAll();
 
 		string &GetAppName();
 	private:
@@ -19,4 +20,5 @@ class ArgsParser
 		int _argc;
 		char **_args;
 		string _appName; 
+		bool _isCatchAll;
 };

@@ -20,6 +20,7 @@ namespace LoWeExposer.Handlers
         private readonly Queue<byte> _keyData;
         private readonly object _lockObj;
         private byte _lastItem;
+        private TcpListener _tcpListener;
 
         public KbdHandler(int port, ILineLogger lineLogger)
         {
@@ -35,10 +36,19 @@ namespace LoWeExposer.Handlers
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
 
+            _tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), _port);
+            _tcpListener.Start();
+
             _backgroundWorker = new BackgroundWorker();
             _backgroundWorker.DoWork += backgroundWorker_DoWork;
             _backgroundWorker.RunWorkerAsync();
 
+        }
+
+        public void Stop()
+        {
+            _tcpListener.Stop();
+            _cancellationTokenSource.Cancel();
         }
 
         public void KeyDownPerformed(byte scanCode)
@@ -59,94 +69,93 @@ namespace LoWeExposer.Handlers
 
         private void EnqueueItem(byte item)
         {
-            if(_lastItem != item)
+            if (_lastItem != item)
                 _keyData.Enqueue(item);
 
             _lastItem = item;
         }
 
-        public void Stop()
-        {
-            _cancellationTokenSource.Cancel();
-        }
-
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), _port);
-            tcpListener.Start();
-
-            while (!_cancellationToken.IsCancellationRequested)
+            try
             {
-                var client = tcpListener.AcceptTcpClient();
-                var networkStream = client.GetStream();
-                bool isInititalized = false;
                 while (!_cancellationToken.IsCancellationRequested)
                 {
-                    var opCode = new byte[4];
-                    if (!ReadAll(networkStream, opCode))
+                    var client = _tcpListener.AcceptTcpClient();
+                    var networkStream = client.GetStream();
+                    bool isInititalized = false;
+                    while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending())
                     {
-                        Thread.Sleep(1);
-                        continue;
-                    }
-
-                    if (IsOperation(opCode, "KEYB"))
-                    {
-                        WriteAll(networkStream, Encoding.ASCII.GetBytes("BYEK"));
-                        networkStream.Close();
-                        _lineLogger.LogLine("Socket check");
-                        break;
-                    }
-
-                    if (IsOperation(opCode, "INIT"))
-                    {
-                        isInititalized = true;
-                    }
-                    else if (IsOperation(opCode, "READ"))
-                    {
-                        if (!isInititalized)
-                            break;
-
-                        var lenData = new byte[4];
-                        if (!ReadAll(networkStream, lenData))
-                            break;
-                        int len = BitConverter.ToInt32(lenData, 0);
-
-                        byte[] array;
-                        lock (_lockObj)
+                        var opCode = new byte[4];
+                        if (!ReadAll(networkStream, opCode))
                         {
-                            var items = new List<byte>();
+                            Thread.Sleep(1);
+                            continue;
+                        }
 
-                            while (_keyData.Count > 0 && items.Count < len)
+                        if (IsOperation(opCode, "KEYB"))
+                        {
+                            WriteAll(networkStream, Encoding.ASCII.GetBytes("BYEK"));
+                            _lineLogger.LogLine("Socket check");
+                            break;
+                        }
+
+                        if (IsOperation(opCode, "INIT"))
+                        {
+                            isInititalized = true;
+                        }
+                        else if (IsOperation(opCode, "READ"))
+                        {
+                            if (!isInititalized)
+                                break;
+
+                            var lenData = new byte[4];
+                            if (!ReadAll(networkStream, lenData))
+                                break;
+                            int len = BitConverter.ToInt32(lenData, 0);
+
+                            byte[] array;
+                            lock (_lockObj)
                             {
-                                items.Add(_keyData.Dequeue());
+                                var items = new List<byte>();
+
+                                while (_keyData.Count > 0 && items.Count < len)
+                                {
+                                    items.Add(_keyData.Dequeue());
+                                }
+                                array = items.ToArray();
+                                _keyData.Clear();
                             }
-                            array = items.ToArray();
-                            _keyData.Clear();
-                        }
 
-                        WriteAll(networkStream, BitConverter.GetBytes(array.Length));
-                        if (array.Length > 0)
-                        {
-                            WriteAll(networkStream, array);
-                            _lineLogger.LogLine($"Keyboard events sent to agent ({array.Length} items).");
+                            WriteAll(networkStream, BitConverter.GetBytes(array.Length));
+                            if (array.Length > 0)
+                            {
+                                WriteAll(networkStream, array);
+                                _lineLogger.LogLine($"Keyboard events sent to agent ({array.Length} items).");
+                            }
+                            else
+                            {
+                                _lineLogger.LogLine("No new keyboard events to be sent to the agent");
+                            }
                         }
-                        else
+                        else if (IsOperation(opCode, "CLOS"))
                         {
-                            _lineLogger.LogLine("No new keyboard events to be sent to the agent");
-                        }
-                    }
-                    else if (IsOperation(opCode, "CLOS"))
-                    {
-                        if (!isInititalized)
+                            if (!isInititalized)
+                                break;
+
+                            _lineLogger.LogLine("Close");
                             break;
-
-                        networkStream.Close();
-                        _lineLogger.LogLine("Close");
-                        break;
+                        }
                     }
+                    networkStream.Close();
+                    client.Close();
                 }
             }
-            tcpListener.Stop();
+            catch(Exception ex)
+            {
+                _lineLogger.LogLine($"Exception: {ex}");
+                _tcpListener.Stop();
+            }
         }
 
         private bool IsOperation(byte[] buffer, string chars)

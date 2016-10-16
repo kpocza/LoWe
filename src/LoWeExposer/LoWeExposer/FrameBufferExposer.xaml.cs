@@ -8,7 +8,7 @@ using LoWeExposer.Handlers;
 
 namespace LoWeExposer
 {
-    public partial class FrameBufferExposer : Window
+    public partial class FrameBufferExposer : Window, IFramebufferDrawer
     {
         private bool _initialized;
         private FrameBufferHandler _frameBufferHandler;
@@ -20,7 +20,7 @@ namespace LoWeExposer
         private bool _mouseCaptured;
         private Point _lastPosition;
         private readonly MiceState _miceState;
-        private IntPtr _hKL;
+        private IntPtr _hKl;
 
         public FrameBufferExposer()
         {
@@ -38,23 +38,9 @@ namespace LoWeExposer
         {
             if (!_initialized)
             {
-                try
-                {
-                    _frameBufferHandler = new FrameBufferHandler(1280, 720, 4);
+                _frameBufferHandler = new FrameBufferHandler(1280, 720, 4, this);
+                _frameBufferHandler.Initialize();
 
-                    if (!_frameBufferHandler.Initialize(Update))
-                    {
-                        MessageBox.Show("Initialization error");
-                        Close();
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Initialization error: " + ex);
-                    Close();
-                    return;
-                }
                 _initialized = true;
             }
         }
@@ -64,10 +50,19 @@ namespace LoWeExposer
             _frameBufferHandler.Stop();
         }
 
-        private void Update(WriteableBitmap writeableBitmap)
+        public void Update(WriteableBitmap writeableBitmap)
         {
             this.capture.Source = null;
             this.capture.Source = writeableBitmap;
+        }
+
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            float aspect = (float)16 / 9;
+            if (sizeInfo.WidthChanged)
+                Width = sizeInfo.NewSize.Height * aspect;
+            else
+                Height = sizeInfo.NewSize.Width / aspect;
         }
 
         #endregion
@@ -84,6 +79,7 @@ namespace LoWeExposer
             this.capture.MouseLeftButtonUp += Capture_MouseLeftButtonUp;
             this.capture.MouseRightButtonDown += Capture_MouseRightButtonDown;
             this.capture.MouseRightButtonUp += Capture_MouseRightButtonUp;
+            this.capture.MouseWheel += Capture_MouseWheel;
             this.capture.MouseLeave += Capture_MouseLeave;
         }
 
@@ -97,9 +93,6 @@ namespace LoWeExposer
                 {
                     _miceState.Reset();
                     _miceExposer.ClearQueue();
-                    _kbdExposer.KeyUpPerformed(0);
-                    _kbdExposer.KeyUpPerformed(29);
-                    _kbdExposer.KeyUpPerformed(56);
                 }
 
                 return;
@@ -152,6 +145,16 @@ namespace LoWeExposer
             EnqueueState();
         }
 
+        private void Capture_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (!_mouseEnabled || !_mouseCaptured)
+                return;
+
+            _miceState.Wheel = e.Delta;
+            EnqueueState();
+            _miceState.Wheel = 0;
+        }
+
         [DllImport("User32.dll")]
         private static extern bool SetCursorPos(int X, int Y);
 
@@ -182,7 +185,7 @@ namespace LoWeExposer
         {
             _kbdExposer = kbdExposer;
             _kbdEnabled = true;
-            _hKL = GetKeyboardLayout(0);
+            _hKl = GetKeyboardLayout(0);
 
 
             this.KeyDown += FrameBufferExposer_KeyDown;
@@ -210,7 +213,7 @@ namespace LoWeExposer
         private uint ResolveScanCode(KeyEventArgs e)
         {
             var virtualKey = (uint)KeyInterop.VirtualKeyFromKey(e.Key != Key.System ? e.Key : e.SystemKey);
-            return MapVirtualKeyEx(virtualKey, 4, _hKL);
+            return MapVirtualKeyEx(virtualKey, 4, _hKl);
         }
 
         [DllImport("user32.dll")]

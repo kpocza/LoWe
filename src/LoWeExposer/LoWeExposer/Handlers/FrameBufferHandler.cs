@@ -13,35 +13,30 @@ namespace LoWeExposer.Handlers
         private readonly int _width;
         private readonly int _height;
         private readonly int _bytesPerPixel;
+        private readonly IFramebufferDrawer _framebufferDrawer;
         private int _stride;
         private int _size;
         private byte[] _data;
         private BinaryReader _binaryReader;
         private WriteableBitmap _writeableBitmap;
-        private Action<WriteableBitmap> _update;
         private DispatcherTimer _dispatcherTimer;
+        private bool _hasFilePath;
 
-        public FrameBufferHandler(int width, int height, int bytesPerPixel)
+        public FrameBufferHandler(int width, int height, int bytesPerPixel, IFramebufferDrawer framebufferDrawer)
         {
             _width = width;
             _height = height;
             _bytesPerPixel = bytesPerPixel;
+            _framebufferDrawer = framebufferDrawer;
+            _hasFilePath = false;
         }
 
-        public bool Initialize(Action<WriteableBitmap> update)
+        public bool Initialize()
         {
-            _update = update;
             _stride = _width * _bytesPerPixel;
             _size = _width * _height * _bytesPerPixel;
 
-            var path = GuessPath();
-
-            if (path == null)
-                return false;
-
-            FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             _data = new byte[_size];
-            _binaryReader = new BinaryReader(fs);
 
             var bitmapSource = BitmapSource.Create(_width, _height, 0, 0, PixelFormats.Bgr32, null, _data, _stride);
             _writeableBitmap = new WriteableBitmap(bitmapSource);
@@ -79,6 +74,18 @@ namespace LoWeExposer.Handlers
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
+            if (!_hasFilePath)
+            {
+                var path = GuessPath();
+
+                if (path == null)
+                    return;
+
+                FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                _binaryReader = new BinaryReader(fs);
+                _hasFilePath = true;
+            }
+
             _binaryReader.BaseStream.Seek(0, SeekOrigin.Begin);
             _binaryReader.Read(_data, 0, _size);
 
@@ -94,7 +101,7 @@ namespace LoWeExposer.Handlers
                 _writeableBitmap.Unlock();
             }
 
-            _update(_writeableBitmap);
+            _framebufferDrawer.Update(_writeableBitmap);
         }
     }
 }

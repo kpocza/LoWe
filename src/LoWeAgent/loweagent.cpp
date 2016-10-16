@@ -40,6 +40,12 @@ int main(int argc, char **args)
 	App app = appIt->second;
 	log.Info("App config identified");
 
+	if(argsParser.IsCatchAll())
+	{
+		log.Info("Adding catchall handler");
+		app.devices.push_back("catchall");
+	}
+
 	DeviceHandlerFactory deviceHandlerFactory;
 	deviceHandlerFactory.Configure(app.devices, configSettings.devices);
 	log.Info("Device handler configured");

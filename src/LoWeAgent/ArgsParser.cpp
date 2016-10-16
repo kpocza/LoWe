@@ -5,6 +5,7 @@
 
 ArgsParser::ArgsParser(int argc, char **args): _argc(argc), _args(args)
 {
+	_isCatchAll = false;
 }
 
 bool ArgsParser::Parse()
@@ -13,6 +14,7 @@ bool ArgsParser::Parse()
 	{
 		{"loglevel", required_argument, 0, 'l'},
 		{"help", no_argument, 0, 'h'},
+		{"catchall", no_argument, 0, 'c'},
 		{0, 0, 0, 0}
 	};
 
@@ -56,6 +58,11 @@ bool ArgsParser::Parse()
 				DisplayHelp();
 				return false;
 			}
+			case 'c':
+			{
+				_isCatchAll = true;
+				break;
+			}
 			default:
 			{
 				fine = false;
@@ -88,9 +95,20 @@ string &ArgsParser::GetAppName()
 	return _appName;
 }
 
+bool ArgsParser::IsCatchAll()
+{
+	return _isCatchAll;
+}
+
 void ArgsParser::DisplayHelp() const
 {
 	cout << "Usage: " << endl;
-	cout << "   loweagent [-loglevel Debug|Info|Error] prog_to_attach" << endl << endl;
+	cout << "   loweagent [-loglevel Debug|Info|Error] [-catchall] prog_to_attach" << endl;
+	cout << "Options:" << endl;
+	cout << "   -l, -loglevel:    Set Debug, Info or Error loglevel. Default: Info" << endl;
+	cout << "   -c, -catchall:    Catch all syscalls that are not handled otherwise and provide log information" 
+		<< endl;
+	cout << "   -h, -help:        Display this help" << endl;
+	cout << endl;
 }
 
