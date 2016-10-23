@@ -7,7 +7,7 @@
 class DeviceHandlerTTY : public DeviceHandler
 {
 	public:
-		DeviceHandlerTTY(const pid_t pid, const char *path);
+		DeviceHandlerTTY(const pid_t pid, const string path);
 
 		virtual bool IsDeviceAvailable() override;
 		virtual string GetFixupScript() const override;

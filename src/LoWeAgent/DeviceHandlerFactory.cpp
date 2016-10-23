@@ -43,12 +43,11 @@ void DeviceHandlerFactory::Configure(const list<string> &devicesToSpy, const lis
 	}
 }
 
-DeviceHandler *DeviceHandlerFactory::Create(const char *path, const pid_t pid) const
+DeviceHandler *DeviceHandlerFactory::Create(const string path, const pid_t pid) const
 {
-	string pathString(path);
-	_log.Debug("Opening:", pathString.c_str());
+	_log.Debug("Opening:", path);
 
-	map<string, string>::const_iterator handlerId = _spyConfig.find(pathString);
+	map<string, string>::const_iterator handlerId = _spyConfig.find(path);
 	if(handlerId == _spyConfig.end())
 	{
 		if(_catchAll)
@@ -60,7 +59,7 @@ DeviceHandler *DeviceHandlerFactory::Create(const char *path, const pid_t pid) c
 	return CreateInternal(path, handlerId->second, pid);
 }
 
-DeviceHandler *DeviceHandlerFactory::CreateInternal(const char *path, const string &id, const pid_t pid) const
+DeviceHandler *DeviceHandlerFactory::CreateInternal(const string &path, const string &id, const pid_t pid) const
 {
 	if(id == "fb")
 		return new DeviceHandlerFrameBuffer(pid, path);

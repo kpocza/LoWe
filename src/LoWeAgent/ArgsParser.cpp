@@ -103,8 +103,8 @@ bool ArgsParser::IsCatchAll()
 void ArgsParser::DisplayHelp() const
 {
 	cout << "Usage: " << endl;
-	cout << "   loweagent [-loglevel Debug|Info|Error] [-catchall] prog_to_attach" << endl;
-	cout << "Options:" << endl;
+	cout << "   loweagent [-loglevel Debug|Info|Error] [-catchall] prog_to_attach" << endl << endl;
+	cout << "Options:" << endl << endl;
 	cout << "   -l, -loglevel:    Set Debug, Info or Error loglevel. Default: Info" << endl;
 	cout << "   -c, -catchall:    Catch all syscalls that are not handled otherwise and provide log information" 
 		<< endl;

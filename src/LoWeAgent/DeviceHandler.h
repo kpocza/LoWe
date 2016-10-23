@@ -7,7 +7,7 @@
 class DeviceHandler
 {
 	protected:
-		DeviceHandler(const pid_t pid, const char *openpath, const string logName);
+		DeviceHandler(const pid_t pid, const string openpath, const string logName, const string exposerId);
 
 	public:
 		virtual ~DeviceHandler();
@@ -17,11 +17,14 @@ class DeviceHandler
 		virtual void ExecuteAfter(const long syscall, user_regs_struct &regs)=0;
 
 		void SetFd(const long fd);
+		string GetExposerId() const;
 
 	protected:
 		const std::string _openpath;
 		const pid_t _pid;
 		Log _log;
+		const string _exposerId;
+		
 		
 		long _fd;
 		long _syscallbefore;

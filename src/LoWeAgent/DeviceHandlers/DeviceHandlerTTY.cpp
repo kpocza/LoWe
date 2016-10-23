@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <asm-generic/ioctls.h>
 
-DeviceHandlerTTY::DeviceHandlerTTY(const pid_t pid, const char *openpath): DeviceHandler(pid, openpath, "tty")
+DeviceHandlerTTY::DeviceHandlerTTY(const pid_t pid, const string openpath): DeviceHandler(pid, openpath, "tty", "")
 {
 	_log.Info("Path:", _openpath);
 
@@ -36,7 +36,7 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 	if(syscall == SYS_open)
 	{
 		_log.Info("-= Before open =-");
-		if(!strcmp(_openpath.c_str(), "/dev/tty0"))
+		if(_openpath == "/dev/tty0")
 		{
 			char tty[16];
 			PeekData(regs.rdi, tty, 16);

@@ -1,11 +1,10 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Windows;
+using System.Windows.Controls;
 using LoWeExposer.Handlers;
 
 namespace LoWeExposer
 {
-    public partial class AlsaExposer : Window, ILineLogger
+    public partial class AlsaExposer : UserControl, ILineLogger
     {
         private AlsaHandler _alsaHandler;
         private int _lineCount = 0;
@@ -15,16 +14,18 @@ namespace LoWeExposer
             InitializeComponent();
         }
 
-        private void AlsaExposer_Loaded(object sender, EventArgs e)
+        public void Start()
         {
-            _alsaHandler = new AlsaHandler(12345, this);
+            _alsaHandler = new AlsaHandler(this);
             _alsaHandler.Start();
         }
 
-        private void AlsaExposer_OnClosing(object sender, CancelEventArgs e)
+        public void Stop()
         {
             _alsaHandler.Stop();
         }
+
+        public int Port => _alsaHandler.Port;
 
         private void AddLine(string text)
         {

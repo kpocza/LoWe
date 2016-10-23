@@ -2,7 +2,7 @@
 #include "PidGuesser.h"
 #include "ConfigHandler.h"
 #include "DeviceHandlerFactory.h"
-#include "DeviceAvailabilityChecker.h"
+#include "DeviceProvisioner.h"
 #include "ProgRuntimeDispatcher.h"
 #include "Log.h"
 #include "ArgsParser.h"
@@ -50,17 +50,24 @@ int main(int argc, char **args)
 	deviceHandlerFactory.Configure(app.devices, configSettings.devices);
 	log.Info("Device handler configured");
 
-	DeviceAvailabilityChecker deviceAvailabilityChecker(deviceHandlerFactory);
-	if(!deviceAvailabilityChecker.Check(app.devices))
+	DeviceProvisioner deviceProvisioner(deviceHandlerFactory);
+
+	if(!deviceProvisioner.EnsureExposer(app.devices))
+	{
+		log.Error("Unable to ensure that exposer is functioning");
+		return 1;
+	}
+
+	if(!deviceProvisioner.CheckAvailability(app.devices))
 	{
 		log.Error("One or more devices are not available");
-		string fixupScript = deviceAvailabilityChecker.GetFixupScript();
+		string fixupScript = deviceProvisioner.GetFixupScript();
 		if(fixupScript.size() > 5)
 		{
 			log.Info("Dev file fixup script is the following");
 	 		cout << fixupScript << endl;
 			log.Info("Executing script as root");
-			deviceAvailabilityChecker.ExecuteFixupScript();
+			deviceProvisioner.ExecuteFixupScript();
 			log.Info("Script done. Please rerun loweagent.");
 		}
 		return 1;

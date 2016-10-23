@@ -1,40 +1,36 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Windows;
+using System.Windows.Controls;
 using LoWeExposer.Handlers;
 
 namespace LoWeExposer
 {
-    public partial class MiceExposer : Window, ILineLogger
+    public partial class MiceExposer : UserControl, ILineLogger
     {
-        private readonly FrameBufferExposer _frameBufferExposer;
+        private FrameBufferExposer _frameBufferExposer;
         private MiceHandler _miceHandler;
         private int _lineCount = 0;
 
-        public MiceExposer(FrameBufferExposer frameBufferExposer)
+        public MiceExposer()
         {
-            _frameBufferExposer = frameBufferExposer;
             InitializeComponent();
         }
 
-        private void MiceExposer_Loaded(object sender, EventArgs e)
+        public void Start(FrameBufferExposer frameBufferExposer)
         {
-            if (_frameBufferExposer == null)
-            {
-                Close();
-                return;
-            }
-
+            _frameBufferExposer = frameBufferExposer;
             _frameBufferExposer.EnableMouseSupport(this);
 
-            _miceHandler = new MiceHandler(12346, this);
+            _miceHandler = new MiceHandler(this);
             _miceHandler.Start();
         }
 
-        private void MiceExposer_OnClosing(object sender, CancelEventArgs e)
+        public void Stop()
         {
             _miceHandler?.Stop();
         }
+
+        public int Port => _miceHandler.Port;
 
         private void AddLine(string text)
         {

@@ -5,8 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 
-DeviceHandlerFrameBuffer::DeviceHandlerFrameBuffer(const pid_t pid, const char *openpath): 
-	DeviceHandler(pid, openpath, "fb")
+DeviceHandlerFrameBuffer::DeviceHandlerFrameBuffer(const pid_t pid, const string openpath): 
+	DeviceHandler(pid, openpath, "fb", "FBUF")
 {
 	int resx = 1280,resy=720,pixsize=4;
 

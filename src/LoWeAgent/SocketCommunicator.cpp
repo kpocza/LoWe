@@ -36,6 +36,7 @@ bool SocketCommunicator::Open(const string address, const int port)
 		log.Debug("Socket connect errno:", errno);
 		return false;
 	}
+	log.Debug("Connected to port no", port, "on host", address);
 	_opened = true;
 
 	return true;

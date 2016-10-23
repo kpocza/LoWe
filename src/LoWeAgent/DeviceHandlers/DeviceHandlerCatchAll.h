@@ -5,7 +5,7 @@
 class DeviceHandlerCatchAll : public DeviceHandler
 {
 	public:
-		DeviceHandlerCatchAll(const pid_t pid, const char *path);
+		DeviceHandlerCatchAll(const pid_t pid, const string path);
 
 		virtual bool IsDeviceAvailable() override;
 		virtual string GetFixupScript() const override;

@@ -2,12 +2,13 @@
 
 #include "DeviceHandlerFactory.h"
 
-class DeviceAvailabilityChecker
+class DeviceProvisioner
 {
 	public:
-		DeviceAvailabilityChecker(const DeviceHandlerFactory &deviceHandlerFactory);
+		DeviceProvisioner(const DeviceHandlerFactory &deviceHandlerFactory);
 
-		bool Check(const list<string> &devicesToSpy);
+		bool EnsureExposer(const list<string> &devicesToSpy);
+		bool CheckAvailability(const list<string> &devicesToSpy);
 		string GetFixupScript() const;
 		void ExecuteFixupScript() const;
 

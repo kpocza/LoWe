@@ -34,12 +34,14 @@ pid_t PidGuesser::Findpid()
 
 	while(fgets(buf, 128, fp)!= NULL)
 	{
+		memset(pidname, 0, sizeof(pidname));
 		strncpy(pidname, buf, 5);
 		int pid = atoi(pidname);
 		if(pid <= 0)
 			continue;
 
-		strncpy(procname, buf+24, 100);
+		memset(procname, 0, sizeof(procname));
+		strncpy(procname, buf+24, 99);
 		procname[strlen(procname)-1] = '\0';
 
 		string procstr(procname);

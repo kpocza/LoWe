@@ -6,8 +6,8 @@
 #include <time.h>
 #include <math.h>
 
-DeviceHandler::DeviceHandler(const int pid, const char *openpath, const string logName): 
-	_openpath(openpath), _pid(pid), _log(Log(logName, pid)) 
+DeviceHandler::DeviceHandler(const int pid, const string openpath, const string logName, const string exposerId): 
+	_openpath(openpath), _pid(pid), _log(Log(logName, pid)), _exposerId(exposerId) 
 {
 	_syscallbefore = SYS_open;
 	_fd = -1;
@@ -25,28 +25,40 @@ void DeviceHandler::SetFd(const long fd)
 
 void DeviceHandler::PokeData(long addr, char *data, int len) const {
 	int chunkSize = sizeof(long);
-	int chunksLen = (len/chunkSize)*chunkSize;
-	int restLen = len - chunksLen;
-	for(int i = 0;i < chunksLen;i+=chunkSize) {
+	int fullChunksEnd = (len/chunkSize)*chunkSize;
+	int restLen = len - fullChunksEnd;
+	for(int i = 0;i < fullChunksEnd;i+=chunkSize) {
 		ptrace(PTRACE_POKEDATA, _pid, addr + i, *(long *)(char *)&data[i]);
 	}
 
 	if(restLen > 0)
 	{
 		char lastChunk[chunkSize];
-		long lastData = ptrace(PTRACE_PEEKDATA, _pid, addr + chunksLen, 0);
+		long lastData = ptrace(PTRACE_PEEKDATA, _pid, addr + fullChunksEnd, 0);
 		*(long *)(&lastChunk) = lastData;
-		for(int i =0;i < restLen;i++)
-			lastChunk[i] = data[chunksLen + i];
-		ptrace(PTRACE_POKEDATA, _pid, addr + chunksLen, *(long *)(char *)&lastChunk);
+		for(int i = 0;i < restLen;i++)
+			lastChunk[i] = data[fullChunksEnd + i];
+		ptrace(PTRACE_POKEDATA, _pid, addr + fullChunksEnd, *(long *)(char *)&lastChunk);
 	}
 }
 
 void DeviceHandler::PeekData(long addr, char *out, int len) const {
-	long data;
-	for(int i = 0;i < len;i+=sizeof(long)) {
-		data = ptrace(PTRACE_PEEKDATA, _pid, addr + i, 0);
+	int chunkSize = sizeof(long);
+	int fullChunksEnd = (len/chunkSize)*chunkSize;
+	int restLen = len - fullChunksEnd;	
+
+	for(int i = 0;i < fullChunksEnd;i+=chunkSize) {
+		long data = ptrace(PTRACE_PEEKDATA, _pid, addr + i, 0);
 		*(long *)(&out[i]) = data;
+	}
+
+	if(restLen > 0)
+	{
+		long data = ptrace(PTRACE_PEEKDATA, _pid, addr + fullChunksEnd, 0);
+	
+		char *dataAddr = (char*)&data;
+		for(int i = 0;i < restLen;i++)
+			out[fullChunksEnd + i] = dataAddr[i];
 	}
 }
 
@@ -108,4 +120,10 @@ long DeviceHandler::GetTimeMillisec()
 
 	return 1000 * s + ms;
 }
+
+string DeviceHandler::GetExposerId() const
+{
+	return _exposerId;
+}
+
 

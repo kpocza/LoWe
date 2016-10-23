@@ -6,7 +6,7 @@
 class DeviceHandlerFrameBuffer : public DeviceHandler
 {
 	public:
-		DeviceHandlerFrameBuffer(const pid_t pid, const char *path);
+		DeviceHandlerFrameBuffer(const pid_t pid, const string path);
 
 		virtual void ExecuteBefore(const long syscall, user_regs_struct &regs) override;
 		virtual void ExecuteAfter(const long syscall, user_regs_struct &regs) override;

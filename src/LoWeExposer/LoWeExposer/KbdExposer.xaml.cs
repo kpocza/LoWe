@@ -1,40 +1,35 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Windows;
+using System.Windows.Controls;
 using LoWeExposer.Handlers;
 
 namespace LoWeExposer
 {
-    public partial class KbdExposer : Window, ILineLogger
+    public partial class KbdExposer : UserControl, ILineLogger
     {
-        private readonly FrameBufferExposer _frameBufferExposer;
+        private FrameBufferExposer _frameBufferExposer;
         private KbdHandler _kbdHandler;
         private int _lineCount = 0;
 
-        public KbdExposer(FrameBufferExposer frameBufferExposer)
+        public KbdExposer()
         {
-            _frameBufferExposer = frameBufferExposer;
             InitializeComponent();
         }
 
-        private void KbdExposer_Loaded(object sender, EventArgs e)
+        public void Start(FrameBufferExposer frameBufferExposer)
         {
-            if (_frameBufferExposer == null)
-            {
-                Close();
-                return;
-            }
-
+            _frameBufferExposer = frameBufferExposer;
             _frameBufferExposer.EnableKeyboardSupport(this);
 
-            _kbdHandler = new KbdHandler(12347, this);
+            _kbdHandler = new KbdHandler(this);
             _kbdHandler.Start();
         }
 
-        private void KbdExposer_OnClosing(object sender, CancelEventArgs e)
+        public void Stop()
         {
             _kbdHandler?.Stop();
         }
+        public int Port => _kbdHandler.Port;
 
         private void AddLine(string text)
         {

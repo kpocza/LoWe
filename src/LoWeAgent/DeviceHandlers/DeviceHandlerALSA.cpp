@@ -2,17 +2,18 @@
 #include <sys/syscall.h>
 #include "DeviceHandlerALSA.h"
 #include <iostream>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
-DeviceHandlerALSA::DeviceHandlerALSA(const pid_t pid, const char *openpath): DeviceHandler(pid, openpath, "alsa")
+DeviceHandlerALSA::DeviceHandlerALSA(const pid_t pid, const string openpath): 
+		CommunicatingDeviceHandler(pid, openpath, "alsa", "ALSA")
 {
-	if(!strcmp(openpath, "/dev/snd/controlC0"))
+	if(openpath == "/dev/snd/controlC0")
 		_devType = Control;
-	if(!strcmp(openpath, "/dev/aloadC0"))
+	if(openpath == "/dev/aloadC0")
 		_devType = Load;
-	if(!strcmp(openpath, "/dev/snd/pcmC0D0p"))
+	if(openpath == "/dev/snd/pcmC0D0p")
 		_devType = PCM;
 
 	_card_info.card = 0;
@@ -46,37 +47,6 @@ DeviceHandlerALSA::DeviceHandlerALSA(const pid_t pid, const char *openpath): Dev
 
 	_log.Info("Path:", _openpath);
 	_log.Info("Processing device type of ", _devType);
-}
-
-bool DeviceHandlerALSA::IsDeviceAvailable()
-{
-	if(!HasPermissions())
-		return false;
-
-	if(!_socketCommunicator.Open("127.0.0.1", _port))
-	{
-		_log.Error("ALSA exposer socket cannot be opened.");
-		_log.Error("Please ensure that LoWeExposer.exe application is running and listening on port", _port);
-		_socketCommunicator.Close();
-		return false;
-	}
-	if(!SendOpcode((char *)"ALSA"))
-	{
-		_log.Error("ALSA exposer socket cannot be written");
-		_log.Error("Please ensure that LoWeExposer.exe application is running and listening on port", _port);
-		_socketCommunicator.Close();
-		return false;
-	}
-	char resp[5]={0};
-	if(!_socketCommunicator.Recv((char *)&resp, 4) || strcmp(resp, "ASLA"))
-	{
-		_log.Error("ALSA exposer socket cannot be read or bad result");
-		_log.Error("Please ensure that LoWeExposer.exe application is running and listening on port", _port);
-		_socketCommunicator.Close();
-		return false;
-	}
-	_socketCommunicator.Close();
-	return true;
 }
 
 string DeviceHandlerALSA::GetFixupScript() const
@@ -283,7 +253,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			_log.Info("SNDRV_PCM_IOCTL_INFO");
 			PokeData(_ioctladdr, (char *)&_pcm_info, sizeof(_pcm_info));
 
-			if(_socketCommunicator.Open("127.0.0.1", _port))
+			if(_socketCommunicator.Open("127.0.0.1", GetPort()))
 			{
 				_log.Info("socket opened");
 				regs.rax = 0;
@@ -349,7 +319,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			if(sampleBitsMin == sampleBitsMax && frameBitsMin == frameBitsMax &&
 				channelsMin == channelsMax && rateMin == rateMax)
 			{
-				SendOpcode((char *)"INIT");
+				SendOpcode("INIT");
 				int initData[4];
 				initData[0] = rateMin;
 				initData[1] = sampleBitsMin;
@@ -380,7 +350,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		{
 			_log.Info("SNDRV_PCM_IOCTL_DELAY");
 			long delay = 0;
-			SendOpcode((char *)"DELA");
+			SendOpcode("DELA");
 			_socketCommunicator.Recv((char *)&delay, 4);
 			_log.Info("delay in frames:", delay);
 			PokeData(_ioctladdr, (char *)&delay, sizeof(delay));
@@ -389,13 +359,13 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		else if(_ioctlop == SNDRV_PCM_IOCTL_DROP)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_DROP");
-			SendOpcode((char *)"DROP");
+			SendOpcode("DROP");
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_HW_FREE)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_HW_FREE");
-			SendOpcode((char *)"CLOS");
+			SendOpcode("CLOS");
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_WRITEI_FRAMES)
@@ -411,7 +381,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			char *buf = (char *)malloc(bytes);
 			PeekData((unsigned long)xferi.buf, (char *)buf, bytes);
 
-			SendOpcode((char *)"PLAY");
+			SendOpcode("PLAY");
 			_socketCommunicator.Send((char *)&bytes, 4);
 			_socketCommunicator.Send(buf, bytes);
 			free(buf);
@@ -424,14 +394,14 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		else if(_ioctlop == SNDRV_PCM_IOCTL_PAUSE)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_PAUSE");
-			SendOpcode((char *)"PAUS");
+			SendOpcode("PAUS");
 			_snd_pcm_status.state = SNDRV_PCM_STATE_SUSPENDED;
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_RESUME)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_RESUME");
-			SendOpcode((char *)"RESU");
+			SendOpcode("RESU");
 			_snd_pcm_status.state = SNDRV_PCM_STATE_RUNNING;
 			regs.rax = 0;
 		}
@@ -446,8 +416,15 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 }
 
-int DeviceHandlerALSA::SendOpcode(char *opCode)
+int DeviceHandlerALSA::_alsaPort = -1;
+void DeviceHandlerALSA::SetPort(int port)
 {
-	return _socketCommunicator.Send(opCode, 4);
+	_alsaPort = port;
 }
+
+int DeviceHandlerALSA::GetPort() const
+{
+	return _alsaPort;
+}
+
 

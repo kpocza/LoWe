@@ -59,6 +59,9 @@ namespace LoWeExposer.Handlers
 
             var lxssTemp = Path.Combine(localAppData, @"lxss\temp");
 
+            if (!Directory.Exists(lxssTemp))
+                return null;
+
             var di = new DirectoryInfo(lxssTemp);
             foreach (var tmp in di.GetDirectories("*_tmpfs"))
             {

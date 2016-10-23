@@ -1,21 +1,21 @@
 #pragma once
 
-#include "DeviceHandler.h"
+#include "CommunicatingDeviceHandler.h"
 #include <sys/ioctl.h>
 #include <sound/asound.h>
-#include "SocketCommunicator.h"
 
-class DeviceHandlerALSA : public DeviceHandler
+class DeviceHandlerALSA : public CommunicatingDeviceHandler
 {
 	public:
-		DeviceHandlerALSA(const pid_t pid, const char *path);
+		DeviceHandlerALSA(const pid_t pid, const string path);
 
-		virtual bool IsDeviceAvailable() override;
 		virtual string GetFixupScript() const override;
 		virtual void ExecuteBefore(const long syscall, user_regs_struct &regs) override;
 		virtual void ExecuteAfter(const long syscall, user_regs_struct &regs) override;
+		virtual void SetPort(int port) override;
+		virtual int GetPort() const override;
+
 	private:
-		int SendOpcode(char *opcode);
 		void ExecuteBeforeControl(const long syscall, user_regs_struct &regs);
 		void ExecuteAfterControl(const long syscall, user_regs_struct &regs);
 		void ExecuteBeforePCM(const long syscall, user_regs_struct &regs);
@@ -28,7 +28,6 @@ class DeviceHandlerALSA : public DeviceHandler
 			PCM = 3
 		};
 
-		int _port = 12345;
 
 		long _ioctlop;
 		long _ioctladdr;
@@ -39,5 +38,5 @@ class DeviceHandlerALSA : public DeviceHandler
 		snd_pcm_hw_params _snd_pcm_hw_params;
 		snd_pcm_status _snd_pcm_status;
 
-		SocketCommunicator _socketCommunicator;
+		static int _alsaPort;
 };

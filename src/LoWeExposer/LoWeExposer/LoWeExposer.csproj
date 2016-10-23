@@ -79,13 +79,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="Handlers\HandlerBase.cs" />
     <Compile Include="Handlers\IFramebufferDrawer.cs" />
+    <Compile Include="Handlers\IInitializer.cs" />
     <Compile Include="Handlers\KbdHandler.cs" />
+    <Compile Include="Handlers\MainHandler.cs" />
     <Compile Include="Handlers\MiceHandler.cs" />
     <Compile Include="Handlers\MiceState.cs" />
     <Compile Include="KbdExposer.xaml.cs">
       <DependentUpon>KbdExposer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="MiceExposer.xaml.cs">
       <DependentUpon>MiceExposer.xaml</DependentUpon>
     </Compile>

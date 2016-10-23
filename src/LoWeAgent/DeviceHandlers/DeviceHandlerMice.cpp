@@ -2,7 +2,6 @@
 #include <sys/syscall.h>
 #include "DeviceHandlerMice.h"
 #include <iostream>
-#include <string.h>
 #include <unistd.h>
 #include <asm-generic/ioctls.h>
 
@@ -22,8 +21,8 @@
 #define GPM_ID_MOUSE 0x0
 #define GPM_MOUSEID_EXPLORER 0x4
 
-DeviceHandlerMice::DeviceHandlerMice(const pid_t pid, const char *openpath): 
-	DeviceHandler(pid, openpath, "mice")
+DeviceHandlerMice::DeviceHandlerMice(const pid_t pid, const string openpath): 
+	CommunicatingDeviceHandler(pid, openpath, "mice", "MICE")
 {
 	_log.Info("Path:", _openpath);
 	_willBeEnabled = false;
@@ -35,37 +34,6 @@ DeviceHandlerMice::DeviceHandlerMice(const pid_t pid, const char *openpath):
 	_curCommand = -1;
 	_cmdAcked = false;
 	_lastMillisec = 0;
-}
-
-bool DeviceHandlerMice::IsDeviceAvailable()
-{
-	if(!HasPermissions())
-		return false;
-
-	if(!_socketCommunicator.Open("127.0.0.1", _port))
-	{
-		_log.Error("Mice exposer socket cannot be opened.");
-		_log.Error("Please ensure that LoWeExposer.exe application is running and listening on port", _port);
-		_socketCommunicator.Close();
-		return false;
-	}
-	if(!SendOpcode((char *)"MICE"))
-	{
-		_log.Error("Mice exposer socket cannot be written");
-		_log.Error("Please ensure that LoWeExposer.exe application is running and listening on port", _port);
-		_socketCommunicator.Close();
-		return false;
-	}
-	char resp[5]={0};
-	if(!_socketCommunicator.Recv((char *)&resp, 4) || strcmp(resp, "ECIM"))
-	{
-		_log.Error("Mice exposer socket cannot be read or bad result");
-		_log.Error("Please ensure that LoWeExposer.exe application is running and listening on port", _port);
-		_socketCommunicator.Close();
-		return false;
-	}
-	_socketCommunicator.Close();
-	return true;
 }
 
 string DeviceHandlerMice::GetFixupScript() const
@@ -201,10 +169,10 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 			_willBeEnabled = true;
 			_cmdAcked = true;
 			_isEnabled = false;
-			if(_socketCommunicator.Open("127.0.0.1", _port))
+			if(_socketCommunicator.Open("127.0.0.1", GetPort()))
 			{
 				_log.Info("socket opened");
-				SendOpcode((char *)"INIT");
+				SendOpcode("INIT");
 				_resp.push_back(GPM_ACK);
 			}
 			else 
@@ -249,7 +217,7 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 				{
 					_lastMillisec = now;
 					_resp.clear();
-					SendOpcode((char *)"READ");
+					SendOpcode("READ");
 					char resp[1+2*4+1];
 					_socketCommunicator.Recv((char *)&resp, 10);
 
@@ -288,12 +256,12 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 							b3 = 256-(char)ydiff;
 						}
 
-						char b4 = resp[9];
+						//char b4 = resp[9];
 
 						_resp.push_back(b1);
 						_resp.push_back(b2);
 						_resp.push_back(b3);
-						_resp.push_back(b4);
+						_resp.push_back(0);
 					}
 				}
 
@@ -369,8 +337,15 @@ void DeviceHandlerMice::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 }
 
-int DeviceHandlerMice::SendOpcode(char *opCode)
+int DeviceHandlerMice::_micePort = -1;
+void DeviceHandlerMice::SetPort(int port)
 {
-	return _socketCommunicator.Send(opCode, 4);
+	_micePort = port;
 }
+
+int DeviceHandlerMice::GetPort() const
+{
+	return _micePort;
+}
+
 

@@ -10,10 +10,10 @@ class DeviceHandlerFactory
 		DeviceHandlerFactory();
 
 		void Configure(const list<string> &devicesToSpy, const list<Device> &devices);
-		DeviceHandler *Create(const char *path, const pid_t pid) const;
+		DeviceHandler *Create(const string path, const pid_t pid) const;
 
 	private:
-		DeviceHandler *CreateInternal(const char *path, const string &id, const pid_t pid) const;
+		DeviceHandler *CreateInternal(const string &path, const string &id, const pid_t pid) const;
 
 		const Log _log;
 

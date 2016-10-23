@@ -5,8 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 
-DeviceHandlerCatchAll::DeviceHandlerCatchAll(const pid_t pid, const char *openpath): 
-	DeviceHandler(pid, openpath, "catchall")
+DeviceHandlerCatchAll::DeviceHandlerCatchAll(const pid_t pid, const string openpath): 
+	DeviceHandler(pid, openpath, "catchall", "")
 {
 
 }

@@ -5,11 +5,34 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LoWeExposer"
         mc:Ignorable="d"
-        Title="Linux on Windows extender Exposer" Height="360" Width="640">
-    <StackPanel>
-        <Button x:Name="btnFrameBuffer" Click="btnFrameBuffer_Click">Framebuffer</Button>
-        <Button x:Name="btnALSA" Click="btnALSA_Click">ALSA</Button>
-        <Button x:Name="btnMice" Click="btnMice_Click">Mouse support</Button>
-        <Button x:Name="btnKbd" Click="btnKbd_Click">Keyboard support</Button>
-    </StackPanel>
+        Title="Linux on Windows extender Exposer" Height="360" Width="440"
+        Loaded="MainWindow_OnLoaded"
+        Closed="MainWindow_OnClosed">
+    <Grid>
+        <TabControl>
+            <TabItem Header="Framebuffer">
+                <DockPanel LastChildFill="False">
+                    <ToggleButton DockPanel.Dock="Top" Checked="btnFramebuffer_OnChecked" Unchecked="btnFramebuffer_OnUnchecked" IsChecked="{Binding Path=FramebufferEnabled}">Enabled</ToggleButton>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Keyboard">
+                <DockPanel>
+                    <ToggleButton Width="96" DockPanel.Dock="Top" HorizontalAlignment="Left" Checked="btnKeyboard_OnChecked" Unchecked="btnKeyboard_OnUnchecked" IsChecked="{Binding Path=KeyboardEnabled}" IsEnabled="{Binding Path=FramebufferEnabled}">Enabled</ToggleButton>
+                    <local:KbdExposer x:Name="kbdExposer"></local:KbdExposer>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Mouse">
+                <DockPanel>
+                    <ToggleButton Width="96" DockPanel.Dock="Top" HorizontalAlignment="Left" Checked="btnMouse_OnChecked" Unchecked="btnMouse_OnUnchecked" IsChecked="{Binding Path=MouseEnabled}" IsEnabled="{Binding Path=FramebufferEnabled}">Enabled</ToggleButton>
+                    <local:MiceExposer x:Name="miceExposer"></local:MiceExposer>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="ALSA">
+                <DockPanel>
+                    <ToggleButton Width="96" DockPanel.Dock="Top" HorizontalAlignment="Left" Checked="btnAlsa_OnChecked" Unchecked="btnAlsa_OnUnchecked" IsChecked="{Binding Path=AlsaEnabled}">Enabled</ToggleButton>
+                    <local:AlsaExposer x:Name="alsaExposer"></local:AlsaExposer>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
 </Window>
