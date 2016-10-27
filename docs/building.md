@@ -27,7 +27,9 @@ Get the source code from ```https://github.com/kpocza/LoWe``` with your preferre
 
 Execute
 
-```make```
+```
+make
+```
 
 in the LoWe/src/LoWeAgent folder in  Bash on Ubuntu on Windows prompt.
 
