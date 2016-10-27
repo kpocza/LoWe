@@ -21,9 +21,7 @@ It's a bit buggy, but works.
 
 # Details
 
-[How It Works](docs/howitworks.md)
-[Building LoWe components](docs/building.md)
-[Running mplayer](docs/mplayer.md)
-[Running X programs](docs/x.md)
-
-
+- [How It Works](docs/howitworks.md)
+- [Building LoWe components](docs/building.md)
+- [Running mplayer](docs/mplayer.md)
+- [Running X programs](docs/x.md)
