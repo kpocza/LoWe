@@ -71,7 +71,7 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 		_writeaddr = regs.rsi;
 		_writelen = regs.rdx;
 		char data[8];
-		PeekData(_writeaddr, (char *)&data, _writelen);
+		PeekData(_writeaddr, &data, _writelen);
 
 		for(int i =0;i < _writelen;i++)
 			_req.push_back((unsigned char)data[i]);
@@ -328,7 +328,7 @@ void DeviceHandlerMice::ExecuteAfter(const long syscall, user_regs_struct &regs)
 			_resp.pop_front();
 			size++;
 		}
-		PokeData(_readaddr, (char *)response, size);
+		PokeData(_readaddr, response, size);
 		regs.rax = size;
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
 		_log.Info("Read size:", size);

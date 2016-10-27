@@ -1,4 +1,5 @@
 obj/
+out/*
 *.h.swp
 *.cpp.swp
 loweagent

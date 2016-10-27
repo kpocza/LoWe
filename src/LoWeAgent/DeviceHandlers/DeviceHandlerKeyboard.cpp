@@ -85,7 +85,7 @@ void DeviceHandlerKeyboard::ExecuteAfter(const long syscall, user_regs_struct &r
 				{
 					char results[size];
 					_socketCommunicator.Recv((char *)&results, size);
-					PokeData(_readaddr, (char *)&results, size);
+					PokeData(_readaddr, &results, size);
 				}
 			}
 		}

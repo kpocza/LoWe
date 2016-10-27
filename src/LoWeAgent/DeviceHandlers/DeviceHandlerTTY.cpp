@@ -26,6 +26,9 @@ bool DeviceHandlerTTY::IsDeviceAvailable()
 
 string DeviceHandlerTTY::GetFixupScript() const
 {
+	if(_openpath == "/dev/tty99" && !HasPermissions())
+		return GetFixupScriptCore();
+		
 	return "";
 }
 
@@ -127,15 +130,15 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		if(_ioctlop == VT_GETSTATE)
 		{
 			_log.Info("VT_GETSTATE");
-			PokeData(_ioctladdr, (char *)&_vt_stat, sizeof(_vt_stat));
+			PokeData(_ioctladdr, &_vt_stat, sizeof(_vt_stat));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == VT_OPENQRY)
 		{
 			_log.Info("VT_OPENQRY");
 			int data;
-			data=3;
-			PokeData(_ioctladdr, (char *)&data, 4);
+			data=99;
+			PokeData(_ioctladdr, &data, 4);
 
 			regs.rax = 0;
 		}
@@ -152,31 +155,31 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		else if(_ioctlop == VT_GETMODE)
 		{
 			_log.Info("VT_GETMODE");
-			PokeData(_ioctladdr, (char *)&_vt_mode, sizeof(_vt_mode));
+			PokeData(_ioctladdr, &_vt_mode, sizeof(_vt_mode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == VT_SETMODE)
 		{
 			_log.Info("VT_SETMODE");
-			PeekData(_ioctladdr, (char *)&_vt_mode, sizeof(_vt_mode));
+			PeekData(_ioctladdr, &_vt_mode, sizeof(_vt_mode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == KDSETMODE)
 		{
 			_log.Info("KDSETMODE");
-			PeekData(_ioctladdr, (char *)&_kdmode, sizeof(_kdmode));
+			PeekData(_ioctladdr, &_kdmode, sizeof(_kdmode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == KDGETMODE)
 		{
 			_log.Info("KDGETMODE");
-			PokeData(_ioctladdr, (char *)&_kdmode, sizeof(_kdmode));
+			PokeData(_ioctladdr, &_kdmode, sizeof(_kdmode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == KDSKBMODE)
 		{
 			_log.Info("KDSKBMODE");
-			PeekData(_ioctladdr, (char *)&_kbmode, sizeof(_kbmode));
+			PeekData(_ioctladdr, &_kbmode, sizeof(_kbmode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == TIOCLINUX)

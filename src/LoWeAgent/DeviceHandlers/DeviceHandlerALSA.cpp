@@ -128,14 +128,14 @@ void DeviceHandlerALSA::ExecuteAfterControl(const long syscall, user_regs_struct
 		if(_ioctlop == SNDRV_CTL_IOCTL_CARD_INFO)
 		{
 			_log.Info("SNDRV_CTL_IOCTL_CARD_INFO");
-			PokeData(_ioctladdr, (char *)&_card_info, sizeof(_card_info));
+			PokeData(_ioctladdr, &_card_info, sizeof(_card_info));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_CTL_IOCTL_PVERSION)
 		{
 			_log.Info("SNDRV_CTL_IOCTL_PVERSION");
 			int ver = SNDRV_CTL_VERSION;
-			PokeData(_ioctladdr, (char *)&ver, sizeof(ver));
+			PokeData(_ioctladdr, &ver, sizeof(ver));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_CTL_IOCTL_PCM_PREFER_SUBDEVICE)
@@ -251,7 +251,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		if(_ioctlop == SNDRV_PCM_IOCTL_INFO)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_INFO");
-			PokeData(_ioctladdr, (char *)&_pcm_info, sizeof(_pcm_info));
+			PokeData(_ioctladdr, &_pcm_info, sizeof(_pcm_info));
 
 			if(_socketCommunicator.Open("127.0.0.1", GetPort()))
 			{
@@ -269,33 +269,33 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		{
 			_log.Info("SNDRV_PCM_IOCTL_PVERSION");
 			int ver = SNDRV_PCM_VERSION;
-			PokeData(_ioctladdr, (char *)&ver, sizeof(ver));
+			PokeData(_ioctladdr, &ver, sizeof(ver));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_TTSTAMP)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_TTSTAMP");
 			int ttstamp = 0;
-			PeekData(_ioctladdr, (char *)&ttstamp, sizeof(ttstamp));
+			PeekData(_ioctladdr, &ttstamp, sizeof(ttstamp));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_SYNC_PTR)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_SYNC_PTR");
-			PeekData(_ioctladdr, (char *)&_pcm_sync_ptr, sizeof(_pcm_sync_ptr));
+			PeekData(_ioctladdr, &_pcm_sync_ptr, sizeof(_pcm_sync_ptr));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_HW_REFINE)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_HW_REFINE");
-			PeekData(_ioctladdr, (char *)&_snd_pcm_hw_params, sizeof(_snd_pcm_hw_params));
+			PeekData(_ioctladdr, &_snd_pcm_hw_params, sizeof(_snd_pcm_hw_params));
 			
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_HW_PARAMS)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_HW_PARAMS");
-			PeekData(_ioctladdr, (char *)&_snd_pcm_hw_params, sizeof(_snd_pcm_hw_params));
+			PeekData(_ioctladdr, &_snd_pcm_hw_params, sizeof(_snd_pcm_hw_params));
 			
 			int format = _snd_pcm_hw_params.masks[SNDRV_PCM_HW_PARAM_FORMAT - 
 				SNDRV_PCM_HW_PARAM_FIRST_MASK].bits[0];
@@ -343,7 +343,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		{
 			_log.Info("SNDRV_PCM_IOCTL_STATUS");
 			_snd_pcm_status.avail = 10000;
-			PokeData(_ioctladdr, (char *)&_snd_pcm_status, sizeof(_snd_pcm_status));
+			PokeData(_ioctladdr, &_snd_pcm_status, sizeof(_snd_pcm_status));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_DELAY)
@@ -353,7 +353,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			SendOpcode("DELA");
 			_socketCommunicator.Recv((char *)&delay, 4);
 			_log.Info("delay in frames:", delay);
-			PokeData(_ioctladdr, (char *)&delay, sizeof(delay));
+			PokeData(_ioctladdr, &delay, sizeof(delay));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_DROP)
@@ -372,14 +372,14 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		{
 			_log.Info("SNDRV_PCM_IOCTL_WRITEI_FRAMES");
 			snd_xferi xferi;
-			PeekData(_ioctladdr, (char *)&xferi, sizeof(xferi));
+			PeekData(_ioctladdr, &xferi, sizeof(xferi));
 			
 			int framebytes = _snd_pcm_hw_params.intervals[SNDRV_PCM_HW_PARAM_FRAME_BITS - 
 				SNDRV_PCM_HW_PARAM_FIRST_INTERVAL].max/8;
 			
 			unsigned int bytes = xferi.frames * framebytes;
 			char *buf = (char *)malloc(bytes);
-			PeekData((unsigned long)xferi.buf, (char *)buf, bytes);
+			PeekData((unsigned long)xferi.buf, buf, bytes);
 
 			SendOpcode("PLAY");
 			_socketCommunicator.Send((char *)&bytes, 4);
@@ -388,7 +388,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			_log.Info("Bytes:", bytes);
 
 			xferi.result = xferi.frames;
-			PokeData(_ioctladdr, (char *)&xferi, sizeof(xferi));
+			PokeData(_ioctladdr, &xferi, sizeof(xferi));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_PAUSE)

@@ -31,8 +31,8 @@ class DeviceHandler
 		long _syscallafter;
 
 		long GetTimeMillisec();
-		void PokeData(long addr, char *data, int len) const;
-		void PeekData(long addr, char *out, int len) const;
+		void PokeData(long addr, void *dataInput, int len) const;
+		void PeekData(long addr, void *dataOutput, int len) const;
 		bool HasPermissions() const;
 		string GetFixupScriptCore() const;
 };

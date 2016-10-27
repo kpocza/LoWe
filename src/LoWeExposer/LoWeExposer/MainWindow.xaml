@@ -13,6 +13,13 @@
             <TabItem Header="Framebuffer">
                 <DockPanel LastChildFill="False">
                     <ToggleButton DockPanel.Dock="Top" Checked="btnFramebuffer_OnChecked" Unchecked="btnFramebuffer_OnUnchecked" IsChecked="{Binding Path=FramebufferEnabled}">Enabled</ToggleButton>
+                    <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Padding="5,10,5,0">
+                        If keyboard input is enabled and the Framebuffer Exposer window is focused it captures keyboard input.
+                    </TextBlock>
+                    <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Padding="5,10,5,0">
+                        If mouse input is enabled the Framebuffer Exposer window can capture the mouse. 
+                        Capture or release the mouse input by holding Ctrl+Alt and click the mouse inside the Framebuffer Exposer window exactly where the pointer is shown.
+                    </TextBlock>
                 </DockPanel>
             </TabItem>
             <TabItem Header="Keyboard">

@@ -2,7 +2,8 @@ CPP=g++
 CFLAGS=-std=c++11 -Wall -I. -IDeviceHandlers 
 #CFLAGS=-std=c++11 -g3 -Wall -I. -IDeviceHandlers 
 OUT=loweagent
-ODIR=obj
+OBJDIR=obj
+OUTDIR=out
 DH=DeviceHandlers/
 
 _OBJ=loweagent.o DeviceHandler.o DeviceHandlerRegistry.o DeviceHandlerFactory.o ConfigHandler.o PidGuesser.o \
@@ -10,7 +11,7 @@ _OBJ=loweagent.o DeviceHandler.o DeviceHandlerRegistry.o DeviceHandlerFactory.o 
 		ArgsParser.o CommunicatingDeviceHandler.o \
 		$(DH)DeviceHandlerCatchAll.o $(DH)DeviceHandlerFrameBuffer.o $(DH)DeviceHandlerTTY.o \
 		$(DH)DeviceHandlerALSA.o $(DH)DeviceHandlerMice.o $(DH)DeviceHandlerKeyboard.o
-OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
+OBJ=$(patsubst %,$(OBJDIR)/%,$(_OBJ))
 
 INC=DeviceHandler.h DeviceHandlerFactory.h DeviceHandlerRegistry.h ConfigHandler.h PidGuesser.h \
 		ProgRuntimeHandler.h ProgRuntimeDispatcher.h SocketCommunicator.h Log.h DeviceProvisioner.h \
@@ -18,19 +19,22 @@ INC=DeviceHandler.h DeviceHandlerFactory.h DeviceHandlerRegistry.h ConfigHandler
 		$(DH)DeviceHandlerCatchAll.h $(DH)DeviceHandlerFrameBuffer.h $(DH)DeviceHandlerTTY.h \
 		$(DH)DeviceHandlerALSA.h $(DH)DeviceHandlerMice.h $(DH)DeviceHandlerKeyboard.h
 
-all: creobjdir build
+all: credirs build
 
-$(OBJ): $(ODIR)/%.o: %.cpp $(INC) Makefile
+$(OBJ): $(OBJDIR)/%.o: %.cpp $(INC) Makefile
 	$(CPP) $< -c -o $@ $(CFLAGS)
 
-creobjdir:
-	mkdir -p $(ODIR)
-	mkdir -p $(ODIR)/$(DH)
+credirs:
+	mkdir -p $(OBJDIR)
+	mkdir -p $(OBJDIR)/$(DH)
+	mkdir -p $(OUTDIR)
 
 build: $(OBJ)
-	$(CPP) -o $(OUT) $^ -lconfig 
+	$(CPP) -o $(OUTDIR)/$(OUT) $^ -lconfig
+	cp loweagent.conf $(OUTDIR)
 
 clean:
-	rm -R -f $(ODIR)
+	rm -R -f $(OBJDIR)
+	rm -R -f $(OUTDIR)
 	rm -f $(OUT)
 

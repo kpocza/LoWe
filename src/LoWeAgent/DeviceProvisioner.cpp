@@ -84,7 +84,7 @@ bool DeviceProvisioner::EnsureExposer(const list<string> &devicesToSpy)
 
 	for(list<string>::const_iterator path = devicesToSpy.begin();path!= devicesToSpy.end();path++)
 	{
-		DeviceHandler *deviceHandler = _deviceHandlerFactory.Create(path->c_str(), -1);
+		DeviceHandler *deviceHandler = _deviceHandlerFactory.Create(*path, -1);
 
 		string exposerId = deviceHandler->GetExposerId();
 		if(exposerId.size() != 4)
@@ -124,7 +124,7 @@ bool DeviceProvisioner::CheckAvailability(const list<string> &devicesToSpy)
 	bool allOk = true;
 	for(list<string>::const_iterator path = devicesToSpy.begin();path!= devicesToSpy.end();path++)
 	{
-		DeviceHandler *deviceHandler = _deviceHandlerFactory.Create(path->c_str(), -1);
+		DeviceHandler *deviceHandler = _deviceHandlerFactory.Create(*path, -1);
 		log.Debug("Examining device:", deviceHandler->GetExposerId());
 		if(!deviceHandler->IsDeviceAvailable())
 		{

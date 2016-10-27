@@ -135,17 +135,17 @@ void DeviceHandlerFrameBuffer::ExecuteAfter(const long syscall, user_regs_struct
 		if(_ioctlop == FBIOGET_FSCREENINFO) {
 			_log.Info("FBIOGET_FSCREENINFO");
 			regs.rax = 0;
-			PokeData(_ioctladdr, (char *)&_fb_finfo, sizeof(_fb_finfo));
+			PokeData(_ioctladdr, &_fb_finfo, sizeof(_fb_finfo));
 		}
 		if(_ioctlop == FBIOGET_VSCREENINFO) {
 			_log.Info("FBIOGET_VSCREENINFO");
 			regs.rax = 0;
-			PokeData(_ioctladdr, (char *)&_fb_vinfo, sizeof(_fb_vinfo));
+			PokeData(_ioctladdr, &_fb_vinfo, sizeof(_fb_vinfo));
 		}
 		if(_ioctlop == FBIOPUT_VSCREENINFO) {
 			_log.Info("FBIOPUT_VSCREENINFO");
 			regs.rax = 0;
-			PeekData(_ioctladdr, (char *)&_fb_vinfonew, sizeof(_fb_vinfo));
+			PeekData(_ioctladdr, &_fb_vinfonew, sizeof(_fb_vinfo));
 			_log.Info("xres:", _fb_vinfonew.xres, "yres:", _fb_vinfonew.yres,
 				"xresv:", _fb_vinfonew.xres_virtual, "yresv:", _fb_vinfonew.yres_virtual,
 				"bpp:", _fb_vinfonew.bits_per_pixel,

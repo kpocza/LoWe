@@ -23,12 +23,16 @@ void DeviceHandler::SetFd(const long fd)
 	_log.SetFd(fd);
 }
 
-void DeviceHandler::PokeData(long addr, char *data, int len) const {
+void DeviceHandler::PokeData(long addr, void *dataInput, int len) const 
+{
+	char *data = (char *)dataInput;
 	int chunkSize = sizeof(long);
 	int fullChunksEnd = (len/chunkSize)*chunkSize;
 	int restLen = len - fullChunksEnd;
-	for(int i = 0;i < fullChunksEnd;i+=chunkSize) {
-		ptrace(PTRACE_POKEDATA, _pid, addr + i, *(long *)(char *)&data[i]);
+
+	for(int i = 0;i < fullChunksEnd;i+=chunkSize) 
+	{
+		ptrace(PTRACE_POKEDATA, _pid, addr + i, *(long *)&data[i]);
 	}
 
 	if(restLen > 0)
@@ -42,23 +46,25 @@ void DeviceHandler::PokeData(long addr, char *data, int len) const {
 	}
 }
 
-void DeviceHandler::PeekData(long addr, char *out, int len) const {
+void DeviceHandler::PeekData(long addr, void *dataOutput, int len) const {
+	char *data = (char *)dataOutput;
 	int chunkSize = sizeof(long);
 	int fullChunksEnd = (len/chunkSize)*chunkSize;
 	int restLen = len - fullChunksEnd;	
 
-	for(int i = 0;i < fullChunksEnd;i+=chunkSize) {
-		long data = ptrace(PTRACE_PEEKDATA, _pid, addr + i, 0);
-		*(long *)(&out[i]) = data;
+	for(int i = 0;i < fullChunksEnd;i+=chunkSize) 
+	{
+		long val = ptrace(PTRACE_PEEKDATA, _pid, addr + i, 0);
+		*(long *)(&data[i]) = val;
 	}
 
 	if(restLen > 0)
 	{
-		long data = ptrace(PTRACE_PEEKDATA, _pid, addr + fullChunksEnd, 0);
+		long val = ptrace(PTRACE_PEEKDATA, _pid, addr + fullChunksEnd, 0);
 	
-		char *dataAddr = (char*)&data;
+		char *dataAddr = (char*)&val;
 		for(int i = 0;i < restLen;i++)
-			out[fullChunksEnd + i] = dataAddr[i];
+			data[fullChunksEnd + i] = dataAddr[i];
 	}
 }
 
