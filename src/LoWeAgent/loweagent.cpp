@@ -1,4 +1,3 @@
-#include <iostream>
 #include "PidGuesser.h"
 #include "ConfigHandler.h"
 #include "DeviceHandlerFactory.h"
@@ -6,10 +5,10 @@
 #include "ProgRuntimeDispatcher.h"
 #include "Log.h"
 #include "ArgsParser.h"
-
-using namespace std;
+#include <iostream>
 
 LogLevel Log::_logLevel = LogLevel::Info;
+ostream *Log::_logout = &cout;
 
 int main(int argc, char **args) 
 {
@@ -58,19 +57,29 @@ int main(int argc, char **args)
 		return 1;
 	}
 
+	log.Info("Checking the availability of all devices...");	
 	if(!deviceProvisioner.CheckAvailability(app.devices))
 	{
 		log.Error("One or more devices are not available");
 		string fixupScript = deviceProvisioner.GetFixupScript();
-		if(fixupScript.size() > 5)
+		if(fixupScript.size() > 0)
 		{
-			log.Info("Dev file fixup script is the following");
-	 		cout << fixupScript << endl;
+			log.Info("Dev file fixup script is the following:\n", fixupScript);
 			log.Info("Executing script as root");
 			deviceProvisioner.ExecuteFixupScript();
-			log.Info("Script done. Please rerun loweagent.");
+
+			log.Info("Script done. Rechecking device availability...");
+			if(!deviceProvisioner.CheckAvailability(app.devices))
+			{
+				log.Error("Unable to recover. Exiting.");
+				return 1;
+			}
 		}
-		return 1;
+		else
+		{
+			log.Error("Unable to recover. Exiting.");
+			return 1;
+		}
 	}
 
 	log.Info("Waiting for process to start...");	

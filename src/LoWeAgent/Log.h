@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <fstream>
 #include <string>
 #include <sys/user.h>
 
@@ -30,6 +30,11 @@ public:
 	{
 		Log::_logLevel = logLevel;
 	}
+
+	static void SetLogFile(const string fileName)
+	{
+		_logout = new ofstream(fileName);
+	}
  
 	template<typename ...Args>
 	void Debug(const Args&... args) const
@@ -38,7 +43,7 @@ public:
 		{
 			Prefix("DEBUG");
 			Internal(args...);
-			cout << endl;
+			*_logout << endl;
 		}
 	}
  
@@ -49,7 +54,7 @@ public:
 		{
 			Prefix("INFO");
 			Internal(args...);
-			cout << endl;
+			*_logout << endl;
 		}
 	}
  
@@ -60,7 +65,7 @@ public:
 		{
 			Prefix("ERR");
 			Internal(args...);
-			cout << endl;
+			*_logout << endl;
 		}
 	}
  
@@ -69,25 +74,26 @@ private:
 	const pid_t _pid;
 	long _fd;
 	static LogLevel _logLevel;
+	static ostream *_logout;
 
 	void Prefix(const string& level) const
 	{
-		cout << "[" << level << "]";
+		*_logout << "[" << level << "]";
 		if(_pid!= -1)
 		{
-			cout << "[P " << _pid << "]";
+			*_logout << "[P " << _pid << "]";
 		}
 		if(_fd!= -1)
 		{
-			cout << "[FD " << _fd << "]";
+			*_logout << "[FD " << _fd << "]";
 		}
-		cout << "{" << _name << "}:";
+		*_logout << "{" << _name << "}:";
 	}
  
 	template<typename Arg>
 	void Internal(const Arg& arg) const
 	{
-		cout << " " << arg;
+		*_logout << " " << arg;
 	}
  
 	template<typename Arg, typename ...Args>

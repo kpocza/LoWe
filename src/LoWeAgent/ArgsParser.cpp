@@ -1,3 +1,4 @@
+#include <iostream>
 #include "ArgsParser.h"
 #include <algorithm>
 #include <getopt.h>
@@ -12,6 +13,7 @@ bool ArgsParser::Parse()
 {
 	struct option long_options[] =
 	{
+		{"outfile", required_argument, 0, 'o'},
 		{"loglevel", required_argument, 0, 'l'},
 		{"help", no_argument, 0, 'h'},
 		{"catchall", no_argument, 0, 'c'},
@@ -28,13 +30,19 @@ bool ArgsParser::Parse()
 	while(1)
 	{
 		int idx = 0;
-		int c = getopt_long_only(_argc, _args, "l:", long_options, &idx);
+		int c = getopt_long_only(_argc, _args, "o:l:", long_options, &idx);
 
 		if(c == -1)
 			break;
 
 		switch(c)
 		{
+			case 'o':
+			{
+				string logFilePath(optarg);
+				Log::SetLogFile(logFilePath);
+				break;
+			}
 			case 'l':
 			{
 				string logLevel(optarg);
@@ -53,15 +61,15 @@ bool ArgsParser::Parse()
 				}
 				break;
 			}
-			case 'h':
-			{
-				DisplayHelp();
-				return false;
-			}
 			case 'c':
 			{
 				_isCatchAll = true;
 				break;
+			}
+			case 'h':
+			{
+				DisplayHelp();
+				return false;
 			}
 			default:
 			{
@@ -103,8 +111,9 @@ bool ArgsParser::IsCatchAll()
 void ArgsParser::DisplayHelp() const
 {
 	cout << "Usage: " << endl;
-	cout << "   loweagent [-loglevel Debug|Info|Error] [-catchall] prog_to_attach" << endl << endl;
+	cout << "   loweagent [-o file.log] [-l Debug|Info|Error] [-c] [-h] program_mode" << endl << endl;
 	cout << "Options:" << endl << endl;
+	cout << "   -o, -outfile:     Send log messages to this file instread of the stdout" << endl;
 	cout << "   -l, -loglevel:    Set Debug, Info or Error loglevel. Default: Info" << endl;
 	cout << "   -c, -catchall:    Catch all syscalls that are not handled otherwise and provide log information" 
 		<< endl;

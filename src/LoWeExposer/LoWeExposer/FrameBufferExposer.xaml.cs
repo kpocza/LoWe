@@ -59,10 +59,12 @@ namespace LoWeExposer
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             float aspect = (float)16 / 9;
+            double captionHeight = SystemParameters.WindowCaptionHeight;
+
             if (sizeInfo.WidthChanged)
-                Width = sizeInfo.NewSize.Height * aspect;
+                Width = (sizeInfo.NewSize.Height - captionHeight) * aspect;
             else
-                Height = sizeInfo.NewSize.Width / aspect;
+                Height = sizeInfo.NewSize.Width / aspect + captionHeight;
         }
 
         #endregion

@@ -43,6 +43,21 @@ To run LoWeAgent libconfig package needs to be installed on top of the defaults.
 
 The loweagent application can be run then from the out directory.
 
+Command line options are as follows:
+
+```
+$ ./loweagent
+Usage:
+   loweagent [-l Debug|Info|Error] [-o file.log] [-c] [-h] program_mode
+
+Options:
+
+   -l, -loglevel:    Set Debug, Info or Error loglevel. Default: Info
+   -o, -outfile:     Send log messages to this file instread of the stdout
+   -c, -catchall:    Catch all syscalls that are not handled otherwise and provide log information
+   -h, -help:        Display this help
+```
+
 # LoWeExposer
 
 LoWeExposer in a Windows WPF executable written in C# targetting .NET Framework 4.6+.

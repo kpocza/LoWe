@@ -18,7 +18,9 @@ sudo apt install xserver-xorg-input-kbd
 sudo apt install wmaker
 ```
 
-Copy the 9-lowe.conf from the configs folder of the local git repository to /usr/share/X11/xorg.conf.d/9-lowe.conf.
+Copy the 9-lowe.conf from the configs folder of the local git repository to ```/usr/share/X11/xorg.conf.d/9-lowe.conf```.
+
+Install any additional packages, eg. xterm, firefox, etc.
 
 The content of the file should look like as follows:
 
@@ -31,48 +33,44 @@ The content of the file should look like as follows:
    - The second one will run the X server
    - The third one will run Window Maker the windowing system
 
-   All must switch to root via ```sudo su```.
-2. You have to start LoWeExposer, as well
+   The **first one** must **switch to root** via ```sudo su```. The reason is that X is a setuid root program so that the tracer should run as root, as well.
+2. You have to also start LoWeExposer
 
 ![whatweneed](img/x/02_whatweneed.jpg "Starting needed programs")
 
 3. loweagent is not a generic application yet, so it is prepared to support some predefined applications, like mplayer or x. Please refer to loweagent.conf.
 
-4. Enter ```./loweagent x``` command in the first Bash to execute LoWeAgent in X mode. It will detect if all devices are available under /dev. Of course not since /dev has only a minimal set of devices. LoWe will created them as root:
+4. Enter ```./loweagent x``` command in the first Bash to execute LoWeAgent in X mode. It will do the following actions:
+
+   1. Detect if any devices require coordination with LoWeExposer
+   2. Check if all regular files that mimic the original /dev file exist
+   3. If not then creates them (as root) and checks for their existence again 
 
    ![Creating devices](img/x/03_credevs.jpg "Creating devices")
 
-   ​
+   4. It will start waiting for the X to start.
+   5. The LoWeExposer will show the FrameBuffer window, moreover Keyboard and Mouse check will also take place.
 
-5. Run the same ```./loweagent x``` command again:
+5. In the second Bash window start ```X```  or ```xinit```:
 
-![Start listening](img/x/04_runagain.jpg "Start listening")
-
-It will start waiting for the X process to start.
-
-The Keyboard and Mouse tabs of LoWeExposer will confirm that socket check completed and the Framebuffer Exposer window will popup.
-
-6. In the second Bash window start ```X```  or ```xinit```:
-
-![X.Org running](img/x/05_startx.jpg "X.Org running")
+![X.Org running](img/x/04_startx.jpg "X.Org running")
 
 It can happen that loweagent doesn't catch the X process. In this case X needs to be rerun (sometimes several times). In the future loweagent will have the ability to start the application and don't try to attach to a process that has been just started.
 
-7. Start Window Maker
+6. Start Window Maker
 
-   The DISPLAY env var needs to be exported and the wmaker process is to be started:
+The DISPLAY env var needs to be exported and the wmaker process is to be started:
 
-   ```
-   export DISPLAY=:0
-   wmaker
-   ```
-
+```
+export DISPLAY=:0
+wmaker
+```
 Like this:
 
-![start wmaker](img/x/06_startwmaker.jpg "Starting Window Maker")
+![start wmaker](img/x/05_startwmaker.jpg "Starting Window Maker")
 
 8. Run X programs in wmaker
 
    The actual GUI is presented in the Framebuffer Exposer window. If it has focus, the keyboard input is forwarded to X. To capture (and release) mouse hold the Ctrl+Alt keys and click the left mouse button on top of the mouse cursor presented in the above mentioned window.
 
-![run progs](img/x/07_wmakerrunning.jpg "Run graphical apps")
+![run progs](img/x/06_wmakerrunning.jpg "Run graphical apps")
