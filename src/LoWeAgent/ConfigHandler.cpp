@@ -6,24 +6,22 @@
 
 using namespace std;
 
-ConfigHandler::ConfigHandler(const char *path)
+ConfigHandler::ConfigHandler(const char *path): _path(path)
 {
-	_path = path;
 }
 
 const ConfigSettings ConfigHandler::LoadConfig()
 {
 	config_t cfg;
 	const char *str;
+
 	ConfigSettings configSettings;
 	configSettings.ok = false;
+
 	Log log("config");
 
-	if(!DetermineConfigPath())
-	{
-		log.Error("Unable to determine config file path");
-		return configSettings;
-	}
+	DetermineConfigPath();
+
 	log.Debug("Opening config file:", _fullPath);
 
 	config_init(&cfg);
@@ -142,13 +140,12 @@ const ConfigSettings ConfigHandler::LoadConfig()
 	return configSettings;
 }
 
-bool ConfigHandler::DetermineConfigPath()
+void ConfigHandler::DetermineConfigPath()
 {
+	memset(_fullPath, 0, sizeof(_fullPath));
 	readlink("/proc/self/exe", _fullPath, PATH_MAX-20);
 	char *dirEnd = strrchr(_fullPath, '/');
 	*(dirEnd+1) = '\0';
 	strcat(_fullPath, _path);
-
-	return true;
 }
 

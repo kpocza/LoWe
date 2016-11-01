@@ -11,15 +11,15 @@ Please follow these steps:
 
 3. loweagent is not a generic application yet, so it is prepared to support some predefined applications, like mplayer. Please refer to loweagent.conf.
 
-4. Enter ```./loweagent mplayer``` command to execute LoWeAgent in mplayer mode. It will do the following actions:
+4. Enter ```./loweagent mplayer``` command to execute LoWeAgent in mplayer mode (it won't start mplayer itself). It will do the following actions:
 
    1. Detect if any devices require coordination with LoWeExposer
    2. Check if all regular files that mimic the original /dev file exist
-   3. If not then creates them (as root) and checks for their existence again 
+   3. If not then it creates them (as root) and checks for their existence again 
 
    ![Creating devices](img/mplayer/02_credevs.jpg "Creating devices")
 
-   4. It will start waiting for the mplayer process to start.
+   4. It will start waiting for the mplayer process to start
    5. The ALSA tab of LoWeExposer will show the following messages:
 
 ![ALSA tab](img/mplayer/03_alsacheck.jpg "ALSA check")
@@ -27,6 +27,8 @@ Please follow these steps:
 ​		Moreover the Framebuffer Exposer window will popup.
 
 The devices created by LoWeAgent will disappear when the lxss session ends. They have to be recreated next time.
+
+Next time you may start   ```./loweagent -o mplayer.log mplayer``` to forward log messages to mplayer.log instead of stdout.
 
 5. In the other Bash window start mplayer with some video or audio like 
 

@@ -17,8 +17,8 @@ class ProgRuntimeHandler
 		bool SpySyscallEnter();
 		bool SpySyscallExit();
 
-		bool hasZero(const unsigned long data);
-		bool readRemoteText(long addr, char *out, int maxlen);
+		bool HasZero(const unsigned long data);
+		bool ReadRemoteText(long addr, char *out, int maxlen);
 
 		const pid_t _pid;
 		const int _status;

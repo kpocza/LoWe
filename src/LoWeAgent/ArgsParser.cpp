@@ -111,13 +111,18 @@ bool ArgsParser::IsCatchAll()
 void ArgsParser::DisplayHelp() const
 {
 	cout << "Usage: " << endl;
-	cout << "   loweagent [-o file.log] [-l Debug|Info|Error] [-c] [-h] program_mode" << endl << endl;
-	cout << "Options:" << endl << endl;
-	cout << "   -o, -outfile:     Send log messages to this file instread of the stdout" << endl;
-	cout << "   -l, -loglevel:    Set Debug, Info or Error loglevel. Default: Info" << endl;
-	cout << "   -c, -catchall:    Catch all syscalls that are not handled otherwise and provide log information" 
+	cout << "    loweagent [-o file.log] [-l Debug|Info|Error] [-c] [-h] program_mode" << endl << endl;
+	cout << "Description: " << endl;
+	cout << "    Listens and reacts to syscalls specified by the program_mode parameter." << endl;
+	cout << "    program_mode parameter refers to an item of loweagent.conf that specified which" << endl;
+	cout << "    /dev-s are to be tracked and handled." << endl;
+	cout << endl;
+	cout << "Options:" << endl;
+	cout << "    -o, -outfile:     Send log messages to this file instread of the stdout" << endl;
+	cout << "    -l, -loglevel:    Set Debug, Info or Error loglevel. Default: Info" << endl;
+	cout << "    -c, -catchall:    Catch all syscalls that are not handled otherwise and provide log information" 
 		<< endl;
-	cout << "   -h, -help:        Display this help" << endl;
+	cout << "    -h, -help:        Display this help" << endl;
 	cout << endl;
 }
 

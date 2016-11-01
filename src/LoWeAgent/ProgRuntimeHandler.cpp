@@ -33,7 +33,7 @@ bool ProgRuntimeHandler::SpySyscallEnter()
 
 	if(syscall == SYS_open)
 	{
-		readRemoteText(regs.rdi, _openpath, 256);
+		ReadRemoteText(regs.rdi, _openpath, sizeof(_openpath));
 		_currentDeviceHandler = _deviceHandlerFactory.Create(_openpath, _pid);
 	}
 	else 
@@ -99,12 +99,12 @@ bool ProgRuntimeHandler::SpySyscallExit()
 	return true;
 }
 
-bool ProgRuntimeHandler::hasZero(const unsigned long data)
+bool ProgRuntimeHandler::HasZero(const unsigned long data)
 {
 	return ((data - 0x0101010101010101) & ~data & 0x8080808080808080) != 0;
 }
 
-bool ProgRuntimeHandler::readRemoteText(long addr, char *out, int maxlen) {
+bool ProgRuntimeHandler::ReadRemoteText(long addr, char *out, int maxlen) {
 	long data;
 	int idx = 0;
 
@@ -115,7 +115,8 @@ bool ProgRuntimeHandler::readRemoteText(long addr, char *out, int maxlen) {
 		idx+=sizeof(long);
 		if(idx >= maxlen-(int)sizeof(long))
 			return false;
-	} while(!hasZero((unsigned long)data));
+	} while(!HasZero((unsigned long)data));
+	out[maxlen-1] = '\0';
 
 	return true;
 }

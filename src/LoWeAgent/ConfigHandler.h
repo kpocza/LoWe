@@ -36,7 +36,7 @@ class ConfigHandler
 		const ConfigSettings LoadConfig();
 
 	private: 
-		bool DetermineConfigPath();
+		void DetermineConfigPath();
 
 		const char *_path;
 		char _fullPath[PATH_MAX];

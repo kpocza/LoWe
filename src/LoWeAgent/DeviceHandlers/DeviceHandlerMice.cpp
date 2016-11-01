@@ -7,19 +7,19 @@
 
 // http://www.win.tue.nl/~aeb/linux/kbd/scancodes-13.html
 
-#define GPM_RESET 0xff
-#define GPM_SETRATE 0xf3
-#define GPM_GETMOUSEID 0xf2
-#define GPM_SETDEFAULTS 0xf6
-#define GPM_SETSCALE1 0xe6
-#define GPM_SETRESOLUTION 0xe8
-#define GPM_SETSTREAMMODE 0xea
-#define GPM_ENABLE 0xf4
-#define GPM_ACK 0xfa
-#define GPM_NACK 0xfe
-#define GPM_READY 0xaa
-#define GPM_ID_MOUSE 0x0
-#define GPM_MOUSEID_EXPLORER 0x4
+#define MICE_RESET 0xff
+#define MICE_SETRATE 0xf3
+#define MICE_GETMOUSEID 0xf2
+#define MICE_SETDEFAULTS 0xf6
+#define MICE_SETSCALE1 0xe6
+#define MICE_SETRESOLUTION 0xe8
+#define MICE_SETSTREAMMODE 0xea
+#define MICE_ENABLE 0xf4
+#define MICE_ACK 0xfa
+#define MICE_NACK 0xfe
+#define MICE_READY 0xaa
+#define MICE_ID_MOUSE 0x0
+#define MICE_MOUSEID_EXPLORER 0x4
 
 DeviceHandlerMice::DeviceHandlerMice(const pid_t pid, const string openpath): 
 	CommunicatingDeviceHandler(pid, openpath, "mice", "MICE")
@@ -85,33 +85,33 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 		}
 
 		_log.Info("Current Command:", _curCommand);
-		if(_curCommand == GPM_RESET)
+		if(_curCommand == MICE_RESET)
 		{
 			_log.Info("Reset");
 			_cmdAcked = true;
-			_resp.push_back(GPM_ACK);
-			_resp.push_back(GPM_READY);
-			_resp.push_back(GPM_ID_MOUSE);
+			_resp.push_back(MICE_ACK);
+			_resp.push_back(MICE_READY);
+			_resp.push_back(MICE_ID_MOUSE);
 			_curCommand = -1;
 		}
-		if(_curCommand == GPM_SETDEFAULTS)
+		if(_curCommand == MICE_SETDEFAULTS)
 		{
 			_log.Info("Set defaults");
 			_cmdAcked = true;
-			_resp.push_back(GPM_ACK);
+			_resp.push_back(MICE_ACK);
 			_rate = 100;
 			_resolution = 4;
 			_willBeEnabled = false;
 			_isEnabled = false;
 			_curCommand = -1;
 		}
-		else if(_curCommand == GPM_SETRATE)
+		else if(_curCommand == MICE_SETRATE)
 		{
 			_log.Info("Set Rate");
 			if(!_cmdAcked)
 			{
 				_cmdAcked = true;
-		 		_resp.push_back(GPM_ACK);
+		 		_resp.push_back(MICE_ACK);
 			}
 
 			if(_req.size() > 0)
@@ -119,17 +119,17 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 				_rate = (int)(unsigned char)_req.front();
 				_req.pop_front();
 				_log.Info("rate:", _rate);
-			 	_resp.push_back(GPM_ACK);
+			 	_resp.push_back(MICE_ACK);
 				_curCommand = -1;
 			}
 		}
-		else if(_curCommand == GPM_SETRESOLUTION)
+		else if(_curCommand == MICE_SETRESOLUTION)
 		{
 			_log.Info("Set Resolution");
 			if(!_cmdAcked)
 			{
 				_cmdAcked = true;
-		 		_resp.push_back(GPM_ACK);
+		 		_resp.push_back(MICE_ACK);
 			}
 
 			if(_req.size() > 0)
@@ -137,33 +137,33 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 				_resolution = (int)(unsigned char)_req.front();
 				_req.pop_front();
 				_log.Info("resolution:", _resolution);
-			 	_resp.push_back(GPM_ACK);
+			 	_resp.push_back(MICE_ACK);
 				_curCommand = -1;
 			}
 		}
-		else if(_curCommand == GPM_GETMOUSEID)
+		else if(_curCommand == MICE_GETMOUSEID)
 		{
 			_log.Info("Get Mouse Id");
 			_cmdAcked = true;
-			_resp.push_back(GPM_MOUSEID_EXPLORER);
+			_resp.push_back(MICE_MOUSEID_EXPLORER);
 			_curCommand = -1;
 		}
-		else if(_curCommand == GPM_SETSCALE1)
+		else if(_curCommand == MICE_SETSCALE1)
 		{
 			_log.Info("Set Scale1");
 			_cmdAcked = true;
-			_resp.push_back(GPM_ACK);
+			_resp.push_back(MICE_ACK);
 			_curCommand = -1;
 		}
-		else if(_curCommand == GPM_SETSTREAMMODE)
+		else if(_curCommand == MICE_SETSTREAMMODE)
 		{
 			_log.Info("Set steam mode");
 			_cmdAcked = true;
 			_isStreamMode = true;
-			_resp.push_back(GPM_ACK);
+			_resp.push_back(MICE_ACK);
 			_curCommand = -1;
 		}
-		else if(_curCommand == GPM_ENABLE)
+		else if(_curCommand == MICE_ENABLE)
 		{
 			_log.Info("Enable mouse");
 			_willBeEnabled = true;
@@ -173,12 +173,12 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 			{
 				_log.Info("socket opened");
 				SendOpcode("INIT");
-				_resp.push_back(GPM_ACK);
+				_resp.push_back(MICE_ACK);
 			}
 			else 
 			{
 				_log.Error("socket open failed");
-				_resp.push_back(GPM_NACK);
+				_resp.push_back(MICE_NACK);
 			}
 			_curCommand = -1;
 		}
@@ -186,7 +186,7 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 		{
 			_log.Info("0");
 			_cmdAcked = true;
-			_resp.push_back(GPM_ACK);
+			_resp.push_back(MICE_ACK);
 			_curCommand = -1;
 		}
 		else
