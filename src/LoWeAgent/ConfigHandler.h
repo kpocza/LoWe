@@ -8,6 +8,11 @@
 
 using namespace std;
 
+struct AppSettings
+{
+	int port;
+};
+
 struct Device
 {
 	string name;
@@ -24,6 +29,7 @@ struct App
 struct ConfigSettings
 {
 	bool ok;
+	AppSettings appSettings;
 	list<Device> devices;
 	map<string, App> apps;
 };

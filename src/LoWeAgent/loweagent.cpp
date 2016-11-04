@@ -51,7 +51,7 @@ int main(int argc, char **args)
 
 	DeviceProvisioner deviceProvisioner(deviceHandlerFactory);
 
-	if(!deviceProvisioner.EnsureExposer(app.devices))
+	if(!deviceProvisioner.EnsureExposer(app.devices, configSettings.appSettings.port))
 	{
 		log.Error("Unable to ensure that exposer is functioning");
 		return 1;

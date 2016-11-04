@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Text;
 using System.Threading;
 
@@ -10,7 +11,7 @@ namespace LoWeExposer.Handlers
     {
         private readonly IInitializer _initializer;
 
-        public MainHandler(IInitializer initializer) : base(12345)
+        public MainHandler(IInitializer initializer) : base(int.Parse(ConfigurationManager.AppSettings["port"]))
         {
             _initializer = initializer;
         }

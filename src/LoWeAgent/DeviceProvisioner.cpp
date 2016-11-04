@@ -11,7 +11,7 @@ DeviceProvisioner::DeviceProvisioner(const DeviceHandlerFactory &deviceHandlerFa
 {
 }
 
-bool DeviceProvisioner::EnsureExposer(const list<string> &devicesToSpy)
+bool DeviceProvisioner::EnsureExposer(const list<string> &devicesToSpy, const int port)
 {
 	Log log("checkexposer");
 
@@ -30,7 +30,8 @@ bool DeviceProvisioner::EnsureExposer(const list<string> &devicesToSpy)
 
 	SocketCommunicator socketCommunicator;
 
-	if(!socketCommunicator.Open("127.0.0.1", 12345))
+	log.Info("Connecting to LoWeExposer on port no.", port);
+	if(!socketCommunicator.Open("127.0.0.1", port))
 	{
 		log.Error("Socket cannot be opened");
 		log.Error("Please ensure that LoWeExposer.exe application is running");

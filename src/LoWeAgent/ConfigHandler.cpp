@@ -33,6 +33,23 @@ const ConfigSettings ConfigHandler::LoadConfig()
 		return configSettings;
 	}
 
+	const config_setting_t *appSettings = config_lookup(&cfg, "appSettings");
+	if(appSettings == NULL)
+	{
+		log.Error("No appSettings section");
+		config_destroy(&cfg);
+		return configSettings;
+	}
+
+	int port;
+	if(config_setting_lookup_int(appSettings, "port", &port) == CONFIG_FALSE || port < 0)
+	{
+		log.Error("Invalid appSettings.port");
+		config_destroy(&cfg);
+		return configSettings;
+	}
+	configSettings.appSettings.port = port;	
+	
 	const config_setting_t *devices = config_lookup(&cfg, "devices");
 	if(devices == NULL)
 	{

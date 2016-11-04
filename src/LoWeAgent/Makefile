@@ -36,5 +36,4 @@ build: $(OBJ)
 clean:
 	rm -R -f $(OBJDIR)
 	rm -R -f $(OUTDIR)
-	rm -f $(OUT)
 
