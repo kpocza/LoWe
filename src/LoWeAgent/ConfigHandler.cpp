@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <unistd.h>
 #include "Log.h"
 
 using namespace std;
