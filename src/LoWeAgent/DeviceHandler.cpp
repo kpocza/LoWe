@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <math.h>
+#include <unistd.h>
 
 DeviceHandler::DeviceHandler(const int pid, const string openpath, const string logName, const string exposerId): 
 	_openpath(openpath), _pid(pid), _log(Log(logName, pid)), _exposerId(exposerId) 

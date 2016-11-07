@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <string>
+#include <unistd.h>
 #include "Log.h"
 
 using namespace std;
