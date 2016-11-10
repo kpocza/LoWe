@@ -12,7 +12,8 @@ class ProgRuntimeDispatcher
 {
 	public:
 		ProgRuntimeDispatcher(DeviceHandlerFactory &deviceHandlerFactory);
-		bool Do(pid_t pid);
+		bool Init(pid_t pid, bool isExec);
+		bool Spin();
 	
 	private:
 		map<pid_t, ProgRuntimeHandler*> _runtimeInfo;
@@ -20,7 +21,6 @@ class ProgRuntimeDispatcher
 		DeviceHandlerFactory &_deviceHandlerFactory;
 		const Log _log;
 
-		bool Init(pid_t pid);
 		ProgRuntimeHandler *GetOrAdd(pid_t pid, int status);
 		void Drop(pid_t pid);
 		bool Step();

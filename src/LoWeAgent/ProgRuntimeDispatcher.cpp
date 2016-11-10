@@ -9,29 +9,32 @@ ProgRuntimeDispatcher::ProgRuntimeDispatcher(DeviceHandlerFactory &deviceHandler
 	_numberOfProcesses = 0;
 }
 
-bool ProgRuntimeDispatcher::Do(pid_t pid)
+bool ProgRuntimeDispatcher::Init(pid_t pid, bool isExec)
 {
-	if(!Init(pid))
-		return false;
+	if(!isExec)
+	{
+		int res = ptrace(PTRACE_ATTACH, pid);
+		if(res) 
+		{
+			_log.Error("Cannot attach process. Result code:", res, "errno:", errno);
+			return false;
+		}
+	}
 
-	while(Step());
+	int options = PTRACE_O_TRACESYSGOOD|PTRACE_O_TRACECLONE|PTRACE_O_TRACEFORK|PTRACE_O_TRACEVFORK;
+	if(isExec)
+		options|=PTRACE_O_TRACEEXEC;
+
+	ptrace(PTRACE_SETOPTIONS, pid, 0, options);
+
+	ptrace(PTRACE_SYSCALL, pid, 0, 0);
 
 	return true;
 }
 
-bool ProgRuntimeDispatcher::Init(pid_t pid)
+bool ProgRuntimeDispatcher::Spin()
 {
-	int res = ptrace(PTRACE_ATTACH, pid);
-	if(res) 
-	{
-		_log.Error("Cannot attach process. Result code:", res);
-		return false;
-	}
-
-	ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD|
-		PTRACE_O_TRACECLONE|PTRACE_O_TRACEFORK|PTRACE_O_TRACEVFORK);
-
-	ptrace(PTRACE_SYSCALL, pid, 0, 0);
+	while(Step());
 
 	return true;
 }

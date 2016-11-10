@@ -5,6 +5,7 @@
 #include "ProgRuntimeDispatcher.h"
 #include "Log.h"
 #include "ArgsParser.h"
+#include "SigActions.h"
 #include <iostream>
 
 LogLevel Log::_logLevel = LogLevel::Info;
@@ -82,16 +83,40 @@ int main(int argc, char **args)
 		}
 	}
 
-	log.Info("Waiting for process to start...");	
-	PidGuesser pidGuesser(app.cmds);
-	pid_t pid = pidGuesser.GetPid();
+	bool isExec = argsParser.IsExec();
+	PidGuesser pidGuesser;
+	pid_t pid = -1;
+	log.Info("Waiting for process to start...");
+
+	if(!isExec)
+	{
+		pid = pidGuesser.WaitForPid(app.cmds);
+	}
+	else
+	{
+		string progToExec = argsParser.GetProgToExec();
+		log.Info(progToExec, "will be started");
+		pid = pidGuesser.StartProcess(progToExec);
+		SigActions::InstallTerminationHandlers(pid);
+	}
+
+	if(pid < 0) 
+	{
+		log.Error("Something went wrong. Cannot determine program's pid");
+		return 1;
+	}
 
 	log.Info("PID:", pid);
 
 	ProgRuntimeDispatcher runtimeDispatcher(deviceHandlerFactory);
+	if(!runtimeDispatcher.Init(pid, isExec))
+	{
+		log.Error("Error initializing main loop");
+		return 1;
+	}
 
 	log.Info("Spinning...");
-	runtimeDispatcher.Do(pid);
+	runtimeDispatcher.Spin();
 	return 0;
 }
 

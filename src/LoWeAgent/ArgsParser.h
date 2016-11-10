@@ -10,15 +10,19 @@ class ArgsParser
 		ArgsParser(int argc, char **args);
 
 		bool Parse();
-		bool IsCatchAll();
 
-		string &GetAppName();
+		string GetAppName() const;
+		bool IsCatchAll() const;
+		string GetProgToExec() const;
+		bool IsExec() const;
 	private:
 
 		void DisplayHelp() const;
 
 		int _argc;
 		char **_args;
+
 		string _appName; 
 		bool _isCatchAll;
+		string _progToExec;
 };

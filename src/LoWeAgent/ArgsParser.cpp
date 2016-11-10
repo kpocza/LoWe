@@ -15,6 +15,7 @@ bool ArgsParser::Parse()
 	{
 		{"outfile", required_argument, 0, 'o'},
 		{"loglevel", required_argument, 0, 'l'},
+		{"exec", required_argument, 0, 'e'},
 		{"help", no_argument, 0, 'h'},
 		{"catchall", no_argument, 0, 'c'},
 		{0, 0, 0, 0}
@@ -30,7 +31,7 @@ bool ArgsParser::Parse()
 	while(1)
 	{
 		int idx = 0;
-		int c = getopt_long_only(_argc, _args, "o:l:", long_options, &idx);
+		int c = getopt_long_only(_argc, _args, "o:l:e:", long_options, &idx);
 
 		if(c == -1)
 			break;
@@ -59,6 +60,12 @@ bool ArgsParser::Parse()
 					DisplayHelp();
 					return false;
 				}
+				break;
+			}
+			case 'e':
+			{
+				_progToExec = string(optarg);
+				
 				break;
 			}
 			case 'c':
@@ -98,31 +105,44 @@ bool ArgsParser::Parse()
 	return fine;
 }
 
-string &ArgsParser::GetAppName()
+string ArgsParser::GetAppName() const
 {
 	return _appName;
 }
 
-bool ArgsParser::IsCatchAll()
+bool ArgsParser::IsCatchAll() const
 {
 	return _isCatchAll;
+}
+
+string ArgsParser::GetProgToExec() const
+{
+	return _progToExec;
+}
+
+bool ArgsParser::IsExec() const
+{
+	return !_progToExec.empty();
 }
 
 void ArgsParser::DisplayHelp() const
 {
 	cout << "Usage: " << endl;
-	cout << "    loweagent [-o file.log] [-l Debug|Info|Error] [-c] [-h] program_mode" << endl << endl;
+	cout << "    loweagent [-e program] [-o file.log] [-l Debug|Info|Error] [-c] [-h] program_mode" << endl << endl;
 	cout << "Description: " << endl;
 	cout << "    Listens and reacts to syscalls specified by the program_mode parameter." << endl;
 	cout << "    program_mode parameter refers to an item of loweagent.conf that specified which" << endl;
 	cout << "    /dev-s are to be tracked and handled." << endl;
 	cout << endl;
 	cout << "Options:" << endl;
-	cout << "    -o, -outfile:     Send log messages to this file instread of the stdout" << endl;
-	cout << "    -l, -loglevel:    Set Debug, Info or Error loglevel. Default: Info" << endl;
-	cout << "    -c, -catchall:    Catch all syscalls that are not handled otherwise and provide log information" 
-		<< endl;
-	cout << "    -h, -help:        Display this help" << endl;
+	cout << "    -e, -exec       Executes the program specified as argument. If it contains a whitespace" << endl;
+	cout << "                    (eg. arg specified) then it must be quoted like this: \"mplayer video.mkv\"" << endl;
+	cout << "                    If -e option is not specified then the program must be started in a" << endl;
+	cout << "                    separate bash window" << endl;
+	cout << "    -o, -outfile    Send log messages to this file instead of stdout" << endl;
+	cout << "    -l, -loglevel   Set Debug, Info or Error loglevel. Default: Info" << endl;
+	cout << "    -c, -catchall   Catch all syscalls that are not handled otherwise and log events" << endl;
+	cout << "    -h, -help       Display this help" << endl;
 	cout << endl;
 }
 

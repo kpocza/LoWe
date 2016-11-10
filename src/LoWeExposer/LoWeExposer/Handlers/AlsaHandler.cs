@@ -26,7 +26,7 @@ namespace LoWeExposer.Handlers
                 {
                     var client = _tcpListener.AcceptTcpClient();
                     var networkStream = client.GetStream();
-                    while (!_cancellationToken.IsCancellationRequested)
+                    while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending())
                     {
                         var opCode = new byte[4];
                         if (!ReadAll(networkStream, opCode))

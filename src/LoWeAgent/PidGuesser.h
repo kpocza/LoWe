@@ -8,11 +8,10 @@ using namespace std;
 class PidGuesser
 {
 	public:
-		PidGuesser(list<string> cmds);
-		pid_t GetPid();
+		PidGuesser();
+		pid_t WaitForPid(list<string>& cmds) const;
+		pid_t StartProcess(string& progToExec) const;
 
 	private:
-		list<string> _cmds;
-
-		pid_t Findpid();
+		pid_t FindPid(list<string>& cmds) const;
 };
