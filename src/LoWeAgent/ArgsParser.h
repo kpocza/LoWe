@@ -11,7 +11,8 @@ class ArgsParser
 
 		bool Parse();
 
-		string GetAppName() const;
+		string GetProgMode() const;
+		bool HasProgMode() const;
 		bool IsCatchAll() const;
 		string GetProgToExec() const;
 		bool IsExec() const;
@@ -22,7 +23,7 @@ class ArgsParser
 		int _argc;
 		char **_args;
 
-		string _appName; 
+		string _progMode; 
 		bool _isCatchAll;
 		string _progToExec;
 };

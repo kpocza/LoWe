@@ -7,6 +7,7 @@
 #include "ArgsParser.h"
 #include "SigActions.h"
 #include <iostream>
+#include <algorithm>
 
 LogLevel Log::_logLevel = LogLevel::Info;
 ostream *Log::_logout = &cout;
@@ -28,8 +29,37 @@ int main(int argc, char **args)
 		return 1;
 	}
 
-	string appName = argsParser.GetAppName();
-	map<string, App>::const_iterator appIt = configSettings.apps.find(appName);
+	map<string, App>::const_iterator appIt;
+
+	if(argsParser.HasProgMode())
+	{
+		string progMode = argsParser.GetProgMode();
+		log.Info("Determining program mode from parameter:", progMode);
+		appIt = configSettings.apps.find(progMode);
+	}
+	else
+	{
+		string progToExec = argsParser.GetProgToExec();
+		log.Info("Determining program mode from exec param:", progToExec);
+
+		string programName = PidGuesser::GetProgramName(progToExec);
+		if(programName.empty())
+		{
+			log.Error("Unable to determine program mode from exec");
+			return 1;
+		}
+		
+		log.Info("Main program name is", programName);
+		appIt = std::find_if(configSettings.apps.begin(), configSettings.apps.end(), 
+			[programName](const std::pair<string, App> &a) -> bool {
+				for(list<string>::const_iterator i = a.second.cmds.begin();i!= a.second.cmds.end();i++)
+				{
+					if(programName == *i)
+						return true;
+				}
+				return false;
+			});
+	}
 
 	if(appIt == configSettings.apps.end())
 	{

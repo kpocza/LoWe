@@ -12,8 +12,6 @@ class DeviceHandlerALSA : public CommunicatingDeviceHandler
 		virtual string GetFixupScript() const override;
 		virtual void ExecuteBefore(const long syscall, user_regs_struct &regs) override;
 		virtual void ExecuteAfter(const long syscall, user_regs_struct &regs) override;
-		virtual void SetPort(int port) override;
-		virtual int GetPort() const override;
 
 	private:
 		void ExecuteBeforeControl(const long syscall, user_regs_struct &regs);
@@ -37,6 +35,4 @@ class DeviceHandlerALSA : public CommunicatingDeviceHandler
 		snd_pcm_sync_ptr _pcm_sync_ptr;
 		snd_pcm_hw_params _snd_pcm_hw_params;
 		snd_pcm_status _snd_pcm_status;
-
-		static int _alsaPort;
 };

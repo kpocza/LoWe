@@ -101,14 +101,3 @@ void DeviceHandlerKeyboard::ExecuteAfter(const long syscall, user_regs_struct &r
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 }
 
-int DeviceHandlerKeyboard::_keybPort = -1;
-void DeviceHandlerKeyboard::SetPort(int port)
-{
-	_keybPort = port;
-}
-
-int DeviceHandlerKeyboard::GetPort() const
-{
-	return _keybPort;
-}
-

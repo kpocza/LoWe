@@ -1,11 +1,11 @@
 # LoWe
 Linux on Windows extender.
 
-Ubuntu on Windows (lxss) released with Windows 10 Anniversary Update runs console based Linux apps on top of the Windows Kernel, not even all of them. The goal of this project is to extend the current functionality of Ubuntu on Windows with support for X apps, video, and sound. Reliability, UX, functionality improvements are expected in the future.
+Ubuntu on Windows (WSL) released with Windows 10 Anniversary Update runs console based Linux apps on top of the Windows Kernel, not even all of them. The goal of this project is to extend the current functionality of Ubuntu on Windows with support for X apps, video, and sound. Reliability, UX, functionality improvements are expected in the future.
 
 Feedback is welcome.
 
-### Bash on Ubuntu on Windows and lxss can really play video and music.
+### Bash on Ubuntu on Windows and WSL can really play video and music.
 
 ![working LoWe and mplayer](docs/img/readme/01_mplayer.jpg "Ubuntu on Windows can play video and music")
 

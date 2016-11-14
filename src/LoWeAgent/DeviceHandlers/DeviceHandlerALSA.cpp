@@ -416,15 +416,3 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 }
 
-int DeviceHandlerALSA::_alsaPort = -1;
-void DeviceHandlerALSA::SetPort(int port)
-{
-	_alsaPort = port;
-}
-
-int DeviceHandlerALSA::GetPort() const
-{
-	return _alsaPort;
-}
-
-

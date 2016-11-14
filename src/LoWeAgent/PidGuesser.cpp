@@ -64,6 +64,23 @@ pid_t PidGuesser::StartProcess(string& progToExec) const
 	}
 }
 
+string PidGuesser::GetProgramName(string &progToExec)
+{
+	wordexp_t result;
+	Log log("starter");
+
+	int res = wordexp(progToExec.c_str(), &result, 0);
+	if(res != 0) 
+	{
+		log.Error("Unable to parse command line:", progToExec);
+		return "";
+	}
+	string programName = result.we_wordv[0];
+	wordfree(&result);
+
+	return programName;
+}
+
 pid_t PidGuesser::FindPid(list<string>& cmds) const
 {
 	char buf[128], pidname[6]={0}, procname[100];

@@ -11,6 +11,7 @@ class PidGuesser
 		PidGuesser();
 		pid_t WaitForPid(list<string>& cmds) const;
 		pid_t StartProcess(string& progToExec) const;
+		static string GetProgramName(string &progToExec);
 
 	private:
 		pid_t FindPid(list<string>& cmds) const;

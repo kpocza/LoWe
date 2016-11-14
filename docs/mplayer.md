@@ -26,7 +26,7 @@ Please follow these steps:
 
 ​		Moreover the Framebuffer Exposer window will popup.
 
-The devices created by LoWeAgent will disappear when the lxss session ends. They have to be recreated next time.
+The devices created by LoWeAgent will disappear when the WSL session ends. They have to be recreated next time.
 
 Next time you may start   ```./loweagent -o mplayer.log mplayer``` to forward log messages to mplayer.log instead of stdout.
 

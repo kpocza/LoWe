@@ -337,15 +337,3 @@ void DeviceHandlerMice::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 }
 
-int DeviceHandlerMice::_micePort = -1;
-void DeviceHandlerMice::SetPort(int port)
-{
-	_micePort = port;
-}
-
-int DeviceHandlerMice::GetPort() const
-{
-	return _micePort;
-}
-
-

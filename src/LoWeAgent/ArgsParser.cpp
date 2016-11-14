@@ -93,21 +93,29 @@ bool ArgsParser::Parse()
 
 	if(optind == _argc - 1)
 	{
-		_appName = string(_args[optind]);
-		log.Info("Appname:", _appName);
+		_progMode = string(_args[optind]);
+		log.Info("Program mode:", _progMode);
 	}
 	else
 	{
-		DisplayHelp();
-		fine = false;
+		if(!(optind == _argc && IsExec()))
+		{
+			DisplayHelp();
+			fine = false;
+		}
 	}
 
 	return fine;
 }
 
-string ArgsParser::GetAppName() const
+string ArgsParser::GetProgMode() const
 {
-	return _appName;
+	return _progMode;
+}
+
+bool ArgsParser::HasProgMode() const
+{
+	return !_progMode.empty();
 }
 
 bool ArgsParser::IsCatchAll() const
@@ -128,11 +136,12 @@ bool ArgsParser::IsExec() const
 void ArgsParser::DisplayHelp() const
 {
 	cout << "Usage: " << endl;
-	cout << "    loweagent [-e program] [-o file.log] [-l Debug|Info|Error] [-c] [-h] program_mode" << endl << endl;
+	cout << "    loweagent [-e program] [-o file.log] [-l Debug|Info|Error] [-c] [-h] [program_mode]" << endl << endl;
 	cout << "Description: " << endl;
 	cout << "    Listens and reacts to syscalls specified by the program_mode parameter." << endl;
 	cout << "    program_mode parameter refers to an item of loweagent.conf that specified which" << endl;
 	cout << "    /dev-s are to be tracked and handled." << endl;
+	cout << "    If program_mode is not specified then it is inferred from the program name specifid by -e." << endl;
 	cout << endl;
 	cout << "Options:" << endl;
 	cout << "    -e, -exec       Executes the program specified as argument. If it contains a whitespace" << endl;

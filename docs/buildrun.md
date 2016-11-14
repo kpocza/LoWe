@@ -2,7 +2,7 @@
 
 As it was mentioned in the How It works document LoWe consists of two components:
 
-1. LoWeAgent, an agent program that's running on Bash on Ubuntu on Windows, lxss
+1. LoWeAgent, an agent program that's running on Bash on Ubuntu on Windows, WSL
 2. LoWeExposer, a Windows application that provides graphics, mouse, X keyboard and sound support
 
 # LoWeAgent

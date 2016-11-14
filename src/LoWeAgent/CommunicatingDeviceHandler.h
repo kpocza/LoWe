@@ -2,20 +2,24 @@
 
 #include "DeviceHandler.h"
 #include "SocketCommunicator.h"
+#include <map>
 
 class CommunicatingDeviceHandler : public DeviceHandler
 {
 	protected:
 		CommunicatingDeviceHandler(const pid_t pid, const string openpath, const string logName, 
-			const string id);
+			const string exposerId);
 
 	public:
 		virtual bool IsDeviceAvailable() override;
-		virtual void SetPort(int port)=0;
-		virtual int GetPort() const =0;
+		void SetPort(int port);
+		int GetPort() const;
 
 	protected:
 		int SendOpcode(const string opcode);
 
 		SocketCommunicator _socketCommunicator;
+
+	private:
+		static map<string, int> _ports;
 };

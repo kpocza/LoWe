@@ -2,8 +2,10 @@
 #include <algorithm>
 #include <string.h>
 
+map<string, int> CommunicatingDeviceHandler::_ports;
+
 CommunicatingDeviceHandler::CommunicatingDeviceHandler(const pid_t pid, const string openpath, 
-	const string logName, const string id):	DeviceHandler(pid, openpath, logName, id)
+	const string logName, const string exposerId): DeviceHandler(pid, openpath, logName, exposerId)
 {
 }
 
@@ -47,5 +49,15 @@ bool CommunicatingDeviceHandler::IsDeviceAvailable()
 int CommunicatingDeviceHandler::SendOpcode(const string opCode)
 {
 	return _socketCommunicator.Send(opCode.c_str(), 4);
+}
+
+void CommunicatingDeviceHandler::SetPort(int port)
+{
+	CommunicatingDeviceHandler::_ports.insert(pair<string, int>(_exposerId, port));
+}
+
+int CommunicatingDeviceHandler::GetPort() const
+{
+	return CommunicatingDeviceHandler::_ports.find(_exposerId)->second;
 }
 

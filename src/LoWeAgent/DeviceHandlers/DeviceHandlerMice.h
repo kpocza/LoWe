@@ -12,8 +12,6 @@ class DeviceHandlerMice : public CommunicatingDeviceHandler
 		virtual string GetFixupScript() const override;
 		virtual void ExecuteBefore(const long syscall, user_regs_struct &regs) override;
 		virtual void ExecuteAfter(const long syscall, user_regs_struct &regs) override;
-		virtual void SetPort(int port) override;
-		virtual int GetPort() const override;
 
 	private:
 		long _ioctlop;
@@ -36,5 +34,4 @@ class DeviceHandlerMice : public CommunicatingDeviceHandler
 		std::list<char> _resp;
 
 		long _lastMillisec;
-		static int _micePort;
 };
