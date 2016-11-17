@@ -6,7 +6,7 @@ However WSL doesn't provide these devices at the moment:
 
 ![/dev](img/howitworks/01_devs.png "Default devices")
 
-LoWe emulates/simulates/tricks these devices while providing the most common functionalities of them. Please be aware that not all device calls are support as of now. The most important goal of this project is to show that WSL is not as closed environment as it seems to be and it can provide more than you would expect. 
+LoWe emulates/simulates/tricks these devices while providing the most common functionalities of them. Please be aware that not all device calls are support at the moment. The most important goal of this project is to show that WSL is not as closed environment as it seems to be and it can provide more than you would expect. 
 
 ## Really? How it works?
 

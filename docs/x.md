@@ -2,6 +2,8 @@
 
 Executing X-based graphical apps is a bit circumstantial at the moment. Simplification is expected in the future.
 
+This documentation contains two ways of starting X. It's recommended to first employ the complex way and once you have accustomed to the theory and story behind it then choose the simplified way. The Prerequisites are the same in both cases.
+
 ## Prerequisites
 
 The following additional packages are to be installed:
@@ -26,7 +28,7 @@ The content of the file should look like as follows:
 
 Install any additional packages, eg. xterm, firefox, libreoffice, etc.
 
-## Steps to follow
+## Steps to follow - Complex way
 
 1. You need to start three instances of Bash
    - The first one will run loweagent (cd to the out folder of loweagent)
@@ -79,3 +81,12 @@ Like this:
    The actual GUI is presented through the Framebuffer Exposer window. If it has focus, the keyboard input is forwarded to X. To capture (and release) mouse hold the Ctrl+Alt keys and click the left mouse button on top of the mouse cursor presented in the above mentioned window.
 
 ![run progs](img/x/06_wmakerrunning.jpg "Run graphical apps")
+
+## Steps to follow - Simplified way
+
+The same effect can be achieved by additional parameterization loweagent that will start the application to be supervised itself. The rules and changes to the complex way are the following:
+
+1. Two Bash windows are enough
+2. LoWeExposer has to be started in the same way as described above
+3. Starting ```sudo loweagent -e "X -o x.log"``` will start and attach to the X process
+4. In the second window the ```export DISPLAY=:0``` and ```wmaker``` commands are to be executed

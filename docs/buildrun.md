@@ -48,23 +48,39 @@ Command line options are as follows:
 ```
 $ ./loweagent
 Usage:
-    loweagent [-l Debug|Info|Error] [-o file.log] [-c] [-h] program_mode
+    loweagent [-e program] [-o file.log] [-l Debug|Info|Error] [-c] [-h] [program_mode]
 
 Description:
     Listens and reacts to syscalls specified by the program_mode parameter.
     program_mode parameter refers to an item of loweagent.conf that specified which
     /dev-s are to be tracked and handled.
-    
+    If program_mode is not specified then it is inferred from the program name specifid by -e.
+
 Options:
-    -l, -loglevel:    Set Debug, Info or Error loglevel. Default: Info
-    -o, -outfile:     Send log messages to this file instread of the stdout
-    -c, -catchall:    Catch all syscalls that are not handled otherwise and provide log information
-    -h, -help:        Display this help
+    -e, -exec       Executes the program specified as argument. If it contains a whitespace
+                    (eg. arg specified) then it must be quoted like this: "mplayer video.mkv"
+                    If -e option is not specified then the program must be started in a
+                    separate bash window
+    -o, -outfile    Send log messages to this file instead of stdout
+    -l, -loglevel   Set Debug, Info or Error loglevel. Default: Info
+    -c, -catchall   Catch all syscalls that are not handled otherwise and log events
+    -h, -help       Display this help
 ```
 
-LoWeAgent requires the program_mode parameter to be specified. Currently mplayer and x program modes are supported. It ensures that the required devices are "emulated" by LoWe and doesn't actually start the program itself. Please refer to loweagent.conf for more details.
+### Startup modes and options
 
-By default LoWeAgent writes log messages to stdout, those can be forwarded to a file via the -o option. Debug, Info, Error loglevels are supported (Info is the default). 
+LoWeAgent can start supervising an application in two ways:
+
+1. It attaches to an application that has just started
+2. Starts the application itself
+
+In the first mode the program_mode is a mandatory parameter. Currently mplayer and x program modes are supported. It ensures that the required devices are "emulated" by LoWe however it doesn't actually start the program itself. loweagent.conf lists what programs are being chased as newly started processes by LoWe so that it can attach to them as quick as possible even before the first device access made that needs to be tricked.
+
+In the second mode the -e parameter is specified. In this case the program (eg. -e X) is started by LoWeAgent that ensures that from the very first step all operations can be traced and tricked. If the program is parameterized then the parameter must be quoted (eg. -e "mplayer my_favourite_vide.mkv"). When -e is specified the program_mode parameter is not mandatory since the program_mode will be automatically deduced from the program name based on loweagent.conf.
+
+### Other options
+
+By default LoWeAgent writes log messages to stdout, those can be forwarded to a file via the -o option. Debug, Info (default), Error loglevels are supported via the -l option. 
 
 The -c option instructs LoWeAgent to catch all relevant syscalls that are not actually handled by LoWe. This is for logging purposes only.
 

@@ -1,5 +1,9 @@
 # Video playback via mplayer
 
+It's recommended to first employ the complex way and once you have accustomed to the theory and story behind it then choose the simplified way.
+
+## The complex way
+
 Please follow these steps:
 
 1. You need to start two instances of Bash
@@ -42,4 +46,14 @@ It can happen that loweagent doesn't catch the mplayer process. In this case mpl
 
 ![Mplayer playing](img/mplayer/05_running.jpg "Mplayer playing")
 
+## The simplified way
 
+The same effect can be achieved by additional parameterization of loweagent that will start the application to be supervised itself. The rules and changes to the complex way are the following:
+
+1. One Bash window is enough
+
+2. LoWeExposer has to be started in the same way as described above
+
+3. Starting ```loweagent -e "mplayer my_favourite_video.mkv -o mplayer.log"``` will start and attach to the mplayer process
+
+   ​
