@@ -255,13 +255,16 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 							b1+= 0x20;
 							b3 = 256-(char)ydiff;
 						}
+						int wheel = (int)resp[9];
 
-						//char b4 = resp[9];
+						char b4 = 0;
+						if(wheel == 1) b4 = 1;
+						if(wheel == -1) b4 = 0xf;
 
 						_resp.push_back(b1);
 						_resp.push_back(b2);
 						_resp.push_back(b3);
-						_resp.push_back(0);
+						_resp.push_back(b4);
 					}
 				}
 

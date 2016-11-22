@@ -120,9 +120,9 @@ namespace LoWeExposer.Handlers
                                     Array.Copy(BitConverter.GetBytes(ydiff), 0, respData, 5, 4);
 
                                     byte wheel = 0;
-                                    if (actualCurrentState.Wheel > 0)
-                                        wheel = 1;
                                     if (actualCurrentState.Wheel < 0)
+                                        wheel = 1;
+                                    if (actualCurrentState.Wheel > 0)
                                         wheel = 0xff;
                                     respData[9] = wheel;
 
