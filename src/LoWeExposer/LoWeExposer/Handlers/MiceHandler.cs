@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
-using System.Threading;
 
 namespace LoWeExposer.Handlers
 {
@@ -43,21 +42,17 @@ namespace LoWeExposer.Handlers
             {
                 while (!_cancellationToken.IsCancellationRequested)
                 {
-                    var client = _tcpListener.AcceptTcpClient();
-                    var networkStream = client.GetStream();
+                    _socket = _tcpListener.AcceptSocket();
                     bool isInititalized = false;
-                    while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending())
+                    while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending() && _socket.Connected)
                     {
                         var opCode = new byte[4];
-                        if (!ReadAll(networkStream, opCode))
-                        {
-                            Thread.Sleep(10);
+                        if (!ReadAllUnpatient(opCode))
                             continue;
-                        }
 
                         if (IsOperation(opCode, "MICE"))
                         {
-                            WriteAll(networkStream, Encoding.ASCII.GetBytes("ECIM"));
+                            WriteAll(Encoding.ASCII.GetBytes("ECIM"));
                             _lineLogger.LogLine("Socket check");
                             break;
                         }
@@ -130,7 +125,7 @@ namespace LoWeExposer.Handlers
                                 }
                             }
 
-                            WriteAll(networkStream, respData);
+                            WriteAll(respData);
 
                             _lineLogger.LogLine("Mouse state sent to agent");
                         }
@@ -144,8 +139,7 @@ namespace LoWeExposer.Handlers
                         }
                     }
 
-                    networkStream.Close();
-                    client.Close();
+                    _socket.Close();
                 }
             }
             catch (Exception ex)

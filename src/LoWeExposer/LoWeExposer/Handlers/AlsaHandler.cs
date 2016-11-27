@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Text;
-using System.Threading;
 using NAudio.Wave;
 
 namespace LoWeExposer.Handlers
@@ -24,20 +23,16 @@ namespace LoWeExposer.Handlers
             {
                 while (!_cancellationToken.IsCancellationRequested)
                 {
-                    var client = _tcpListener.AcceptTcpClient();
-                    var networkStream = client.GetStream();
-                    while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending())
+                    _socket = _tcpListener.AcceptSocket();
+                    while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending() && _socket.Connected)
                     {
                         var opCode = new byte[4];
-                        if (!ReadAll(networkStream, opCode))
-                        {
-                            Thread.Sleep(10);
+                        if (!ReadAllUnpatient(opCode))
                             continue;
-                        }
 
                         if (IsOperation(opCode, "ALSA"))
                         {
-                            WriteAll(networkStream, Encoding.ASCII.GetBytes("ASLA"));
+                            WriteAll(Encoding.ASCII.GetBytes("ASLA"));
                             _lineLogger.LogLine("Socket check");
                             break;
                         }
@@ -45,7 +40,7 @@ namespace LoWeExposer.Handlers
                         if (IsOperation(opCode, "INIT"))
                         {
                             var initData = new byte[4*4];
-                            if (!ReadAll(networkStream, initData))
+                            if (!ReadAllPatient(initData))
                                 break;
 
                             var rate = BitConverter.ToInt32(initData, 0);
@@ -65,12 +60,12 @@ namespace LoWeExposer.Handlers
                                 break;
 
                             var lenData = new byte[4];
-                            if (!ReadAll(networkStream, lenData))
+                            if (!ReadAllPatient(lenData))
                                 break;
                             int len = BitConverter.ToInt32(lenData, 0);
 
                             var buffer = new byte[len];
-                            if (!ReadAll(networkStream, buffer))
+                            if (!ReadAllPatient(buffer))
                                 break;
 
                             alsaPlayer.Write(buffer);
@@ -84,7 +79,7 @@ namespace LoWeExposer.Handlers
                             var frames = alsaPlayer.GetDelay();
 
                             var framesDelay = BitConverter.GetBytes(frames);
-                            WriteAll(networkStream, framesDelay);
+                            WriteAll(framesDelay);
                         }
                         else if (IsOperation(opCode, "DROP"))
                         {
@@ -117,8 +112,7 @@ namespace LoWeExposer.Handlers
                         }
                     }
 
-                    networkStream.Close();
-                    client.Close();
+                    _socket.Close();
                     waveOut?.Stop();
                     alsaPlayer = null;
                 }

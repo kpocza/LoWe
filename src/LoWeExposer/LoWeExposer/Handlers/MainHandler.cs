@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Text;
-using System.Threading;
 
 namespace LoWeExposer.Handlers
 {
@@ -20,28 +19,24 @@ namespace LoWeExposer.Handlers
         {
             while (!_cancellationToken.IsCancellationRequested)
             {
-                var client = _tcpListener.AcceptTcpClient();
-                var networkStream = client.GetStream();
+                _socket = _tcpListener.AcceptSocket();
 
                 while (!_cancellationToken.IsCancellationRequested)
                 {
                     var opCode = new byte[4];
-                    if (!ReadAll(networkStream, opCode))
-                    {
-                        Thread.Sleep(100);
+                    if (!ReadAllUnpatient(opCode))
                         continue;
-                    }
 
                     if (IsOperation(opCode, "LOWE"))
                     {
                         var countData = new byte[4];
-                        if (!ReadAll(networkStream, countData))
+                        if (!ReadAllPatient(countData))
                             break;
 
                         int count = BitConverter.ToInt32(countData, 0);
 
                         var handlerData = new byte[4*count];
-                        if (!ReadAll(networkStream, handlerData))
+                        if (!ReadAllPatient(handlerData))
                             break;
 
                         var handlers = new HashSet<string>();
@@ -64,14 +59,13 @@ namespace LoWeExposer.Handlers
                             idx++;
                         }
 
-                        WriteAll(networkStream, Encoding.ASCII.GetBytes("EWOL"));
-                        WriteAll(networkStream, responseData);
+                        WriteAll(Encoding.ASCII.GetBytes("EWOL"));
+                        WriteAll(responseData);
                         break;
                     }
                 }
 
-                networkStream.Close();
-                client.Close();
+                _socket.Close();
             }
         }
     }

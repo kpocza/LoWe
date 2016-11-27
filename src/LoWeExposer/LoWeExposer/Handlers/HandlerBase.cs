@@ -13,6 +13,7 @@ namespace LoWeExposer.Handlers
         private CancellationTokenSource _cancellationTokenSource;
         protected CancellationToken _cancellationToken;
         protected TcpListener _tcpListener;
+        protected Socket _socket;
 
         protected HandlerBase(int port = 0)
         {
@@ -56,10 +57,26 @@ namespace LoWeExposer.Handlers
             return true;
         }
 
-        protected bool ReadAll(NetworkStream networkStream, byte[] buffer)
+        protected bool ReadAllUnpatient(byte[] buffer)
         {
-            if (!networkStream.CanRead)
+            return ReadAll(buffer, 10*1000);
+        }
+
+        protected bool ReadAllPatient(byte[] buffer)
+        {
+            return ReadAll(buffer, 1000*1000);
+        }
+
+        private bool ReadAll(byte[] buffer, int timeout)
+        {
+            if (!_socket.Poll(timeout, SelectMode.SelectRead))
                 return false;
+
+            if (_socket.Available == 0)
+            {
+                Thread.Sleep(10);
+                return false;
+            }
 
             try
             {
@@ -68,7 +85,7 @@ namespace LoWeExposer.Handlers
 
                 while (count > 0)
                 {
-                    int size = networkStream.Read(buffer, offset, count);
+                    int size = _socket.Receive(buffer, offset, count, SocketFlags.None);
                     if (size < 1)
                         return false;
                     offset += size;
@@ -82,10 +99,18 @@ namespace LoWeExposer.Handlers
             }
         }
 
-        protected void WriteAll(NetworkStream networkStream, byte[] data)
+        protected void WriteAll(byte[] buffer)
         {
-            networkStream.Write(data, 0, data.Length);
-        }
+            int offset = 0;
+            int count = buffer.Length;
 
+            while (count > 0)
+            {
+                int size = _socket.Send(buffer, offset, count, SocketFlags.None);
+
+                offset += size;
+                count -= size;
+            }
+        }
     }
 }

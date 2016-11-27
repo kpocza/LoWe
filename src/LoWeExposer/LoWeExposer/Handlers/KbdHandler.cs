@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
-using System.Threading;
 
 namespace LoWeExposer.Handlers
 {
@@ -51,21 +50,17 @@ namespace LoWeExposer.Handlers
             {
                 while (!_cancellationToken.IsCancellationRequested)
                 {
-                    var client = _tcpListener.AcceptTcpClient();
-                    var networkStream = client.GetStream();
+                    _socket = _tcpListener.AcceptSocket();
                     bool isInititalized = false;
-                    while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending())
+                    while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending() && _socket.Connected)
                     {
                         var opCode = new byte[4];
-                        if (!ReadAll(networkStream, opCode))
-                        {
-                            Thread.Sleep(10);
+                        if (!ReadAllUnpatient(opCode))
                             continue;
-                        }
 
                         if (IsOperation(opCode, "KEYB"))
                         {
-                            WriteAll(networkStream, Encoding.ASCII.GetBytes("BYEK"));
+                            WriteAll(Encoding.ASCII.GetBytes("BYEK"));
                             _lineLogger.LogLine("Socket check");
                             break;
                         }
@@ -80,7 +75,7 @@ namespace LoWeExposer.Handlers
                                 break;
 
                             var lenData = new byte[4];
-                            if (!ReadAll(networkStream, lenData))
+                            if (!ReadAllPatient(lenData))
                                 break;
                             int len = BitConverter.ToInt32(lenData, 0);
 
@@ -97,10 +92,10 @@ namespace LoWeExposer.Handlers
                                 _keyData.Clear();
                             }
 
-                            WriteAll(networkStream, BitConverter.GetBytes(array.Length));
+                            WriteAll(BitConverter.GetBytes(array.Length));
                             if (array.Length > 0)
                             {
-                                WriteAll(networkStream, array);
+                                WriteAll(array);
                                 _lineLogger.LogLine($"Keyboard events sent to agent ({array.Length} items).");
                             }
                             else
@@ -117,8 +112,7 @@ namespace LoWeExposer.Handlers
                             break;
                         }
                     }
-                    networkStream.Close();
-                    client.Close();
+                    _socket.Close();
                 }
             }
             catch(Exception ex)
