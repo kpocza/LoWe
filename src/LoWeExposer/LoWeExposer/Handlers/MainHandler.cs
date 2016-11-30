@@ -24,7 +24,7 @@ namespace LoWeExposer.Handlers
                 while (!_cancellationToken.IsCancellationRequested)
                 {
                     var opCode = new byte[4];
-                    if (!ReadAllUnpatient(opCode))
+                    if (!ReadAllImpatient(opCode))
                         continue;
 
                     if (IsOperation(opCode, "LOWE"))

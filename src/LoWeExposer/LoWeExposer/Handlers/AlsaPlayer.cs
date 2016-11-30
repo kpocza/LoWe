@@ -57,7 +57,7 @@ namespace LoWeExposer.Handlers
                 }
             }
 
-            _lineLogger.LogLine($"Buffering {buffer.Length} bytes");
+            _lineLogger.LogLine($"Buffering {buffer.Length / (_convertFromFloat ? 2 : 1)} bytes");
         }
 
         public override int Read(byte[] buffer, int offset, int count)

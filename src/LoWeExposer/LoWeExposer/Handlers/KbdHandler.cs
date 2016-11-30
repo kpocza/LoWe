@@ -55,7 +55,7 @@ namespace LoWeExposer.Handlers
                     while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending() && _socket.Connected)
                     {
                         var opCode = new byte[4];
-                        if (!ReadAllUnpatient(opCode))
+                        if (!ReadAllImpatient(opCode))
                             continue;
 
                         if (IsOperation(opCode, "KEYB"))

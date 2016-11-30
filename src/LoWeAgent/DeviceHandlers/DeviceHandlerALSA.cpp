@@ -316,6 +316,11 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			int rateMax = _snd_pcm_hw_params.intervals[SNDRV_PCM_HW_PARAM_RATE - 
 				SNDRV_PCM_HW_PARAM_FIRST_INTERVAL].max;
 
+			int bufferSizeMax = _snd_pcm_hw_params.intervals[SNDRV_PCM_HW_PARAM_BUFFER_SIZE - 
+				SNDRV_PCM_HW_PARAM_FIRST_INTERVAL].max;
+			int bufferBytesMax = _snd_pcm_hw_params.intervals[SNDRV_PCM_HW_PARAM_BUFFER_BYTES - 
+				SNDRV_PCM_HW_PARAM_FIRST_INTERVAL].max;
+
 			if(sampleBitsMin == sampleBitsMax && frameBitsMin == frameBitsMax &&
 				channelsMin == channelsMax && rateMin == rateMax)
 			{
@@ -325,6 +330,9 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 				initData[1] = sampleBitsMin;
 				initData[2] = channelsMin;
 				initData[3] = format;
+				_log.Debug("ALSA hw setup. rate:", rateMin, ", samplebits:", sampleBitsMin, 
+					", channels:", channelsMin, ", format:", format);
+				_log.Debug("ALSA hw setup. bufsize:", bufferSizeMax, ", bufbytes:", bufferBytesMax);
 				_socketCommunicator.Send((char *)&initData, 4*4);
 			}
 			regs.rax = 0;
@@ -342,7 +350,22 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		else if(_ioctlop == SNDRV_PCM_IOCTL_STATUS)
 		{
 			_log.Info("SNDRV_PCM_IOCTL_STATUS");
-			_snd_pcm_status.avail = 10000;
+			long delay = 0;
+			SendOpcode("STAT");
+			_socketCommunicator.Recv((char *)&delay, 4);
+			_log.Info("delay in frames:", delay);
+
+			int bufferSizeMax = _snd_pcm_hw_params.intervals[SNDRV_PCM_HW_PARAM_BUFFER_SIZE - 
+				SNDRV_PCM_HW_PARAM_FIRST_INTERVAL].max;
+
+			if(bufferSizeMax < 10000)
+				bufferSizeMax = 10000;
+
+			int avail = bufferSizeMax - delay;
+
+			if(avail < 0)
+				avail = 0;
+			_snd_pcm_status.avail = avail;
 			PokeData(_ioctladdr, &_snd_pcm_status, sizeof(_snd_pcm_status));
 			regs.rax = 0;
 		}

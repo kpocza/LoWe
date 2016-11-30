@@ -27,7 +27,7 @@ namespace LoWeExposer.Handlers
                     while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending() && _socket.Connected)
                     {
                         var opCode = new byte[4];
-                        if (!ReadAllUnpatient(opCode))
+                        if (!ReadAllImpatient(opCode))
                             continue;
 
                         if (IsOperation(opCode, "ALSA"))
@@ -72,6 +72,16 @@ namespace LoWeExposer.Handlers
                             waveOut.Play();
                         }
                         else if (IsOperation(opCode, "DELA"))
+                        {
+                            if (alsaPlayer == null)
+                                break;
+
+                            var frames = alsaPlayer.GetDelay();
+
+                            var framesDelay = BitConverter.GetBytes(frames);
+                            WriteAll(framesDelay);
+                        }
+                        else if (IsOperation(opCode, "STAT"))
                         {
                             if (alsaPlayer == null)
                                 break;

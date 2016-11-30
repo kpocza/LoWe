@@ -57,7 +57,7 @@ namespace LoWeExposer.Handlers
             return true;
         }
 
-        protected bool ReadAllUnpatient(byte[] buffer)
+        protected bool ReadAllImpatient(byte[] buffer)
         {
             return ReadAll(buffer, 10*1000);
         }
