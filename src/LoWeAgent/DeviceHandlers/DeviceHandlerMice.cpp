@@ -200,12 +200,20 @@ void DeviceHandlerMice::ExecuteBefore(const long syscall, user_regs_struct &regs
 	}
 	else if(syscall == SYS_read)
 	{
-		_log.Info("-= Before read =-");
+		if(!_isEnabled)
+			_log.Info("-= Before read =-");
+		else
+			_log.Debug("-= Before read =-");
 		_log.Debug("Read regs. rdi:", regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx);
 
 		_readaddr = regs.rsi;
 		_readlen = regs.rdx;
-		_log.Info("Read size:", _readlen);
+
+		if(!_isEnabled)
+			_log.Info("Read size:", _readlen);
+		else
+			_log.Debug("Read size:", _readlen);
+
 		regs.orig_rax = -1;
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
 		if(_isEnabled)
@@ -319,14 +327,22 @@ void DeviceHandlerMice::ExecuteAfter(const long syscall, user_regs_struct &regs)
 	}
 	else if(_syscallbefore == SYS_read)
 	{
-		_log.Info("-= After read =-");
+		if(!_isEnabled)
+			_log.Info("-= After read =-");
+		else
+			_log.Debug("-= After read =-");
+
 		unsigned char response[_readlen];
 		int size = 0;
 		while(!_resp.empty() && size < _readlen)
 		{
 			unsigned char r = _resp.front(); 
 			response[size] = r;
-			_log.Info("Resp:", (int)r);
+
+			if(!_isEnabled)
+				_log.Info("Resp:", (int)r);
+			else
+				_log.Debug("Resp:", (int)r);
 			
 			_resp.pop_front();
 			size++;
@@ -334,7 +350,11 @@ void DeviceHandlerMice::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		PokeData(_readaddr, response, size);
 		regs.rax = size;
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
-		_log.Info("Read size:", size);
+
+		if(!_isEnabled)
+			_log.Info("Read size:", size);
+		else
+			_log.Debug("Read size:", size);
 	}
 	_log.Debug("regs. rax:", regs.rax, "rdi:", regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx,
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);

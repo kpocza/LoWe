@@ -35,12 +35,21 @@ void DeviceHandlerKeyboard::ExecuteBefore(const long syscall, user_regs_struct &
 	}
 	else if(syscall == SYS_read)
 	{
-		_log.Info("-= Before read =-");
+		if(!_isEnabled)
+			_log.Info("-= Before read =-");
+		else
+			_log.Debug("-= Before read =-");
+
 		_log.Debug("Read regs. rdi:", regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx);
 
 		_readaddr = regs.rsi;
 		_readlen = regs.rdx;
-		_log.Info("Read size:", _readlen);
+
+		if(!_isEnabled)
+			_log.Info("Read size:", _readlen);
+		else
+			_log.Debug("Read size:", _readlen);
+
 		regs.orig_rax = -1;
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
 	}
@@ -78,7 +87,7 @@ void DeviceHandlerKeyboard::ExecuteAfter(const long syscall, user_regs_struct &r
 			{
 				_lastMillisec = now;
 				SendOpcode("READ");
-				_log.Info("-= After read =-");
+				_log.Debug("-= After read =-");
 				_socketCommunicator.Send((char *)&_readlen, 4);
 				_socketCommunicator.Recv((char *)&size, 4);
 				if(size > 0)
@@ -91,7 +100,11 @@ void DeviceHandlerKeyboard::ExecuteAfter(const long syscall, user_regs_struct &r
 		}
 		regs.rax = size;
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
-		_log.Info("Read size:", size);
+
+		if(!_isEnabled)
+			_log.Info("Read size:", size);
+		else
+			_log.Debug("Read size:", size);
 	}
 	else if(_syscallbefore == SYS_ioctl) 
 	{

@@ -91,7 +91,7 @@ bool ProgRuntimeHandler::SpySyscallExit()
 	{
 		ptrace(PTRACE_GETREGS, _pid, NULL, &regs);
 		_currentDeviceHandler->ExecuteAfter(syscall, regs);
-		_log.Info("---");
+		_log.Debug("---");
 	}
 
 	_exiting=!_exiting;

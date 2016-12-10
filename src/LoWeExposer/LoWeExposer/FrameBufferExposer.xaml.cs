@@ -21,6 +21,7 @@ namespace LoWeExposer
         private Point _lastPosition;
         private readonly MiceState _miceState;
         private IntPtr _hKl;
+        private bool _isFullScreen;
 
         public FrameBufferExposer()
         {
@@ -30,6 +31,7 @@ namespace LoWeExposer
             _mouseCaptured = false;
             _miceState = new MiceState();
             _kbdEnabled = false;
+            _isFullScreen = false;
         }
 
         #region Graphics
@@ -40,8 +42,10 @@ namespace LoWeExposer
             {
                 _frameBufferHandler = new FrameBufferHandler(1280, 720, 4, this);
                 _frameBufferHandler.Initialize();
-
                 _initialized = true;
+
+                this.KeyDown += FrameBufferExposer_KeyDown;
+                this.KeyUp += FrameBufferExposer_KeyUp;
             }
         }
 
@@ -188,10 +192,6 @@ namespace LoWeExposer
             _kbdExposer = kbdExposer;
             _kbdEnabled = true;
             _hKl = GetKeyboardLayout(0);
-
-
-            this.KeyDown += FrameBufferExposer_KeyDown;
-            this.KeyUp += FrameBufferExposer_KeyUp;
         }
 
         private void FrameBufferExposer_KeyDown(object sender, KeyEventArgs e)
@@ -205,6 +205,11 @@ namespace LoWeExposer
 
         private void FrameBufferExposer_KeyUp(object sender, KeyEventArgs e)
         {
+            if (Keyboard.IsKeyDown(Key.LeftAlt) && e.Key == Key.System && e.SystemKey == Key.F12)
+            {
+                SwitchWindowMode();
+            }
+
             if (!_kbdEnabled)
                 return;
 
@@ -223,6 +228,36 @@ namespace LoWeExposer
 
         [DllImport("user32.dll")]
         static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
+
+        #endregion
+
+        #region Window resize
+
+        private void SwitchWindowMode()
+        {
+            _isFullScreen = !_isFullScreen;
+
+            if(_isFullScreen)
+                Fullscreen();
+            else
+                NormalSize();
+        }
+
+        private void NormalSize()
+        {
+            Topmost = false;
+            WindowState = WindowState.Normal;
+            ResizeMode = ResizeMode.CanResize;
+            WindowStyle = WindowStyle.SingleBorderWindow;
+        }
+
+        private void Fullscreen()
+        {
+            Topmost = true;
+            ResizeMode = ResizeMode.NoResize;
+            WindowStyle = WindowStyle.None;
+            WindowState = WindowState.Maximized;
+        }
 
         #endregion
     }

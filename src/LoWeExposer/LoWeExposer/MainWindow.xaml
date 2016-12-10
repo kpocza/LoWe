@@ -18,7 +18,10 @@
                     </TextBlock>
                     <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Padding="5,10,5,0">
                         If mouse input is enabled the Framebuffer Exposer window can capture the mouse. 
-                        Capture or release the mouse input by holding Ctrl+Alt and click the mouse inside the Framebuffer Exposer window exactly where the pointer is shown.
+                        Capture or release the mouse input by holding LeftCtrl+LeftAlt and click the mouse inside the Framebuffer Exposer window exactly where the pointer is shown.
+                    </TextBlock>
+                    <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Padding="5,10,5,0">
+                        Use LeftAlt+F12 to switch the Frmebuffer window to fullscreen and back.
                     </TextBlock>
                 </DockPanel>
             </TabItem>
