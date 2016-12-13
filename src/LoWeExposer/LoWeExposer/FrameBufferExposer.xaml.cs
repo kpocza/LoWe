@@ -3,7 +3,9 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using LoWeExposer.Handlers;
 
 namespace LoWeExposer
@@ -34,15 +36,17 @@ namespace LoWeExposer
             _isFullScreen = false;
         }
 
+        public int Port => _frameBufferHandler.Port;
+
         #region Graphics
 
         private void FrameBufferExposer_Loaded(object sender, EventArgs e)
         {
             if (!_initialized)
             {
-                _frameBufferHandler = new FrameBufferHandler(1280, 720, 4, this);
-                _frameBufferHandler.Initialize();
                 _initialized = true;
+                _frameBufferHandler = new FrameBufferHandler(this);
+                _frameBufferHandler.Start();
 
                 this.KeyDown += FrameBufferExposer_KeyDown;
                 this.KeyUp += FrameBufferExposer_KeyUp;
@@ -54,11 +58,66 @@ namespace LoWeExposer
             _frameBufferHandler.Stop();
         }
 
-        public void Update(WriteableBitmap writeableBitmap)
+        private int _stride;
+        private int _size;
+        private byte[] _data;
+        private WriteableBitmap _writeableBitmap;
+        private DispatcherTimer _dispatcherTimer;
+
+        private int _width;
+        private int _height;
+        private int _bytesPerPixel;
+
+        public void Initialize(int width, int height, int bytesPerPixel)
         {
-            this.capture.Source = null;
-            this.capture.Source = writeableBitmap;
+            Dispatcher.Invoke(() =>
+            {
+                _width = width;
+                _height = height;
+                _bytesPerPixel = bytesPerPixel;
+
+                _stride = _width*_bytesPerPixel;
+                _size = _width*_height*_bytesPerPixel;
+
+                _data = new byte[_size];
+
+                var bitmapSource = BitmapSource.Create(_width, _height, 0, 0, PixelFormats.Bgr32, null, _data, _stride);
+                _writeableBitmap = new WriteableBitmap(bitmapSource);
+
+                _dispatcherTimer = new DispatcherTimer();
+                _dispatcherTimer.Tick += DispatcherTimer_Tick;
+                _dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 20);
+                _dispatcherTimer.Start();
+            });
         }
+
+        public byte[] Data => _data;
+
+        public void Stop()
+        {
+            Dispatcher.Invoke(() => {
+                _dispatcherTimer?.Stop();
+            });
+        }
+
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                _writeableBitmap.Lock();
+
+                Marshal.Copy(_data, 0, _writeableBitmap.BackBuffer, _size);
+                _writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, _width, _height));
+            }
+            finally
+            {
+                _writeableBitmap.Unlock();
+            }
+
+            this.capture.Source = null;
+            this.capture.Source = _writeableBitmap;
+        }
+
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {

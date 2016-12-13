@@ -5,8 +5,88 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <pthread.h>
+#include <sys/uio.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/reg.h>
+
+struct FrameBufferContext 
+{
+	FrameBufferContext() 
+	{
+		ThreadsRunning = false;
+	}
+	
+	void StartThreads(int pid, int size, long remoteAddress, SocketCommunicator *socketCommunicator)
+	{
+		Pid = pid;
+		BufferSize = size;
+		RemoteAddress = remoteAddress;
+		SocketComm = socketCommunicator;
+		Buffer = malloc(size);
+		ThreadsRunning = true;
+		pthread_create(&ReaderThreadId, NULL, &ReaderThread_Proc, this);
+		pthread_create(&SenderThreadId, NULL, &SenderThread_Proc, this);
+	}
+
+	void StopThreads()
+	{
+		if(ThreadsRunning)
+		{
+			ThreadsRunning = false;
+			pthread_join(ReaderThreadId, NULL);
+			pthread_join(SenderThreadId, NULL);
+			free(Buffer);
+		}
+	}
+
+	static void *ReaderThread_Proc(void *arg)
+	{
+		FrameBufferContext *fbContext = (FrameBufferContext *)arg;
+		struct iovec local, remote;
+
+		local.iov_base = fbContext->Buffer;
+		local.iov_len = fbContext->BufferSize;
+		remote.iov_base = (void *)fbContext->RemoteAddress;
+		remote.iov_len = fbContext->BufferSize;
+
+		while(fbContext->ThreadsRunning)
+		{
+			process_vm_readv(fbContext->Pid, &local, 1, &remote, 1, 0);
+			usleep(1000000/50);
+		}
+
+		return NULL;
+	}
+
+	static void *SenderThread_Proc(void *arg)
+	{
+		FrameBufferContext *fbContext = (FrameBufferContext *)arg;
+
+		while(fbContext->ThreadsRunning)
+		{
+			fbContext->SocketComm->Send("FRAM", 4);
+			fbContext->SocketComm->Send((const char *)fbContext->Buffer, fbContext->BufferSize);
+			usleep(1000000/50);
+		}
+		return NULL;
+	}
+
+	void *Buffer;
+	int Pid;
+	int BufferSize;
+	long RemoteAddress;
+	volatile bool ThreadsRunning;
+	pthread_t ReaderThreadId;
+	pthread_t SenderThreadId;
+	SocketCommunicator *SocketComm;
+};
+
+FrameBufferContext *DeviceHandlerFrameBuffer::_fbContext = new FrameBufferContext();
+
 DeviceHandlerFrameBuffer::DeviceHandlerFrameBuffer(const pid_t pid, const string openpath): 
-	DeviceHandler(pid, openpath, "fb", "FBUF")
+	CommunicatingDeviceHandler(pid, openpath, "fb", "FBUF")
 {
 	int resx = 1280,resy=720,pixsize=4;
 
@@ -61,6 +141,7 @@ DeviceHandlerFrameBuffer::DeviceHandlerFrameBuffer(const pid_t pid, const string
 	_fb_con2fbmap.console = 0;
 	_fb_con2fbmap.framebuffer = 0;
 
+
 	_log.Info("Path:", _openpath);
 }
 
@@ -111,6 +192,21 @@ void DeviceHandlerFrameBuffer::ExecuteBefore(const long syscall, user_regs_struc
 		}
 		regs.orig_rax = -1;
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+	}
+	else if(syscall == SYS_mmap)
+	{
+		_log.Info("MMAP");
+/*		_log.Debug("MMAP regs.", "orig_rax:", regs.orig_rax, "rax:", regs.rax , "rdi:", 
+			regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx, "r10:", regs.r10, "r8:", regs.r8);
+
+//		regs.r10 = MAP_PRIVATE|MAP_ANONYMOUS;
+//		regs.r8 = -1;
+//		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		_log.Debug("MMAP regs.", "orig_rax:", regs.orig_rax, "rax:", regs.rax , "rdi:", 
+			regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx, "r10:", regs.r10, "r8:", regs.r8);
+		int e = errno;
+		_log.Debug("errno:", e);*/
+		_fbContext->StopThreads();
 	}
 	else
 	{
@@ -174,6 +270,29 @@ void DeviceHandlerFrameBuffer::ExecuteAfter(const long syscall, user_regs_struct
 		}
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
 	}
+	else if(_syscallbefore == SYS_mmap)
+	{
+		_log.Debug("After MMAP:", regs.rax);
+		if(_socketCommunicator.Open("127.0.0.1", GetPort()))
+		{
+			_log.Info("socket opened");
+			SendOpcode("INIT");
+			int params[3];
+			params[0] = _fb_vinfo.xres;
+			params[1] = _fb_vinfo.yres;
+			params[2] = _fb_vinfo.bits_per_pixel;
+			_socketCommunicator.Send((char *)params, sizeof(params));
+			long address = regs.rax;
+			_fbContext->StartThreads(_pid, _fb_finfo.mmio_len, address, &_socketCommunicator);
+		}
+		else 
+		{
+			_log.Error("socket open failed");
+			regs.rax = -1;
+			ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		}
+	}
+
 	_log.Debug("regs. rax:", regs.rax, "rdi:", regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx,
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 }

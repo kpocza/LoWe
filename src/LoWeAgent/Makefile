@@ -30,7 +30,7 @@ credirs:
 	mkdir -p $(OUTDIR)
 
 build: $(OBJ)
-	$(CPP) -o $(OUTDIR)/$(OUT) $^ -lconfig
+	$(CPP) -o $(OUTDIR)/$(OUT) $^ -lconfig -lpthread
 	cp loweagent.conf $(OUTDIR)
 
 clean:

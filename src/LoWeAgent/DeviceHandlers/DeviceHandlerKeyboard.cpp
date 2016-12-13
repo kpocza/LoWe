@@ -31,6 +31,7 @@ void DeviceHandlerKeyboard::ExecuteBefore(const long syscall, user_regs_struct &
 		_ioctlop = regs.rsi;
 		_ioctladdr = regs.rdx;
 		_log.Error("unknown ioctl op ", _ioctlop);
+		regs.orig_rax = -1;
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
 	}
 	else if(syscall == SYS_read)

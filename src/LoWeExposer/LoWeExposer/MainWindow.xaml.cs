@@ -96,7 +96,7 @@ namespace LoWeExposer
                     _viewModel.AlsaEnabled = true;
 
                 if (names.Contains("FBUF"))
-                    result.Add("FBUF", _viewModel.FramebufferEnabled == true ? 1 : 0);
+                    result.Add("FBUF", _frameBufferExposer.Port);
                 if (names.Contains("MICE"))
                     result.Add("MICE", miceExposer.Port);
                 if (names.Contains("KEYB"))

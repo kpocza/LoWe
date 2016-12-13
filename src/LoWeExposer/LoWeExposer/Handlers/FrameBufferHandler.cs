@@ -1,110 +1,64 @@
 ﻿using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Threading;
+using System.ComponentModel;
+using System.Text;
 
 namespace LoWeExposer.Handlers
 {
-    class FrameBufferHandler
+    internal class FrameBufferHandler : HandlerBase
     {
-        private readonly int _width;
-        private readonly int _height;
-        private readonly int _bytesPerPixel;
         private readonly IFramebufferDrawer _framebufferDrawer;
-        private int _stride;
-        private int _size;
-        private byte[] _data;
-        private BinaryReader _binaryReader;
-        private WriteableBitmap _writeableBitmap;
-        private DispatcherTimer _dispatcherTimer;
-        private bool _hasFilePath;
 
-        public FrameBufferHandler(int width, int height, int bytesPerPixel, IFramebufferDrawer framebufferDrawer)
+        public FrameBufferHandler(IFramebufferDrawer framebufferDrawer)
         {
-            _width = width;
-            _height = height;
-            _bytesPerPixel = bytesPerPixel;
             _framebufferDrawer = framebufferDrawer;
-            _hasFilePath = false;
         }
 
-        public bool Initialize()
+        protected override void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            _stride = _width * _bytesPerPixel;
-            _size = _width * _height * _bytesPerPixel;
-
-            _data = new byte[_size];
-
-            var bitmapSource = BitmapSource.Create(_width, _height, 0, 0, PixelFormats.Bgr32, null, _data, _stride);
-            _writeableBitmap = new WriteableBitmap(bitmapSource);
-            _dispatcherTimer = new DispatcherTimer();
-            _dispatcherTimer.Tick += DispatcherTimer_Tick;
-            _dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 40);
-            _dispatcherTimer.Start();
-
-            return true;
-        }
-
-        public void Stop()
-        {
-            _dispatcherTimer?.Stop();
-        }
-
-        private string GuessPath()
-        {
-            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-            var lxssTemp = Path.Combine(localAppData, @"lxss\temp");
-
-            if (!Directory.Exists(lxssTemp))
-                return null;
-
-            var di = new DirectoryInfo(lxssTemp);
-            foreach (var tmp in di.GetDirectories("*_tmpfs"))
-            {
-                var filePath = Path.Combine(tmp.FullName, "fb0");
-                if (File.Exists(filePath))
-                {
-                    return filePath;
-                }
-            }
-
-            return null;
-        }
-
-        private void DispatcherTimer_Tick(object sender, EventArgs e)
-        {
-            if (!_hasFilePath)
-            {
-                var path = GuessPath();
-
-                if (path == null)
-                    return;
-
-                FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                _binaryReader = new BinaryReader(fs);
-                _hasFilePath = true;
-            }
-
-            _binaryReader.BaseStream.Seek(0, SeekOrigin.Begin);
-            _binaryReader.Read(_data, 0, _size);
-
             try
             {
-                _writeableBitmap.Lock();
+                while (!_cancellationToken.IsCancellationRequested)
+                {
+                    _socket = _tcpListener.AcceptSocket();
+                    while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending() && _socket.Connected)
+                    {
+                        var opCode = new byte[4];
+                        if (!ReadAllImpatient(opCode))
+                            continue;
 
-                Marshal.Copy(_data, 0, _writeableBitmap.BackBuffer, _size);
-                _writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, _width, _height));
+                        if (IsOperation(opCode, "FBUF"))
+                        {
+                            WriteAll(Encoding.ASCII.GetBytes("FUBF"));
+                            break;
+                        }
+
+                        if (IsOperation(opCode, "INIT"))
+                        {
+                            var initData = new byte[3*4];
+                            if (!ReadAllPatient(initData))
+                                break;
+
+                            var width = BitConverter.ToInt32(initData, 0);
+                            var height = BitConverter.ToInt32(initData, 4);
+                            var bytesPerPixel = BitConverter.ToInt32(initData, 8)/8;
+
+                            _framebufferDrawer.Initialize(width, height, bytesPerPixel);
+                        }
+                        else if (IsOperation(opCode, "FRAM"))
+                        {
+                            if (!ReadAllPatient(_framebufferDrawer.Data))
+                                break;
+                        }
+                    }
+
+                    _socket.Close();
+                    _framebufferDrawer.Stop();
+                }
             }
-            finally
+            catch
             {
-                _writeableBitmap.Unlock();
+                _tcpListener.Stop();
             }
-
-            _framebufferDrawer.Update(_writeableBitmap);
         }
     }
 }

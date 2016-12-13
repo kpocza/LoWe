@@ -1,9 +1,11 @@
 #pragma once
 
-#include "DeviceHandler.h"
+#include "CommunicatingDeviceHandler.h"
 #include <linux/fb.h>
 
-class DeviceHandlerFrameBuffer : public DeviceHandler
+struct FrameBufferContext;
+
+class DeviceHandlerFrameBuffer : public CommunicatingDeviceHandler
 {
 	public:
 		DeviceHandlerFrameBuffer(const pid_t pid, const string path);
@@ -17,4 +19,7 @@ class DeviceHandlerFrameBuffer : public DeviceHandler
 		struct fb_con2fbmap _fb_con2fbmap;
 		long _ioctlop;
 		long _ioctladdr;
+
+		static FrameBufferContext *_fbContext;
 };
+
