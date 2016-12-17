@@ -23,7 +23,9 @@ These apps communicate to each other through the NTFS file system and network so
 
 The Framebuffer device (/dev/fb0) provides graphic presentation support on Linux. The device itself supports some basic ioctl calls like querying and setting graphics modes moreover presenting pixel graphics through a memory mapped area.
 
-LoWe creates a file that is as large as the framebuffer size to fit 1280x720x32bpp image without double buffering. Then it tricks the caller to accept this graphics mode for presentation. Applications originally use mmap to map the device memory area. In this case the regular file's content will be memory mapped. A Windows WPF application periodically presents the content of this file (that resides in the temp folder of WSL) in a WPF window.
+LoWe creates a file that is as large as the framebuffer size to fit 1280x720x32bpp image without double buffering. Then it tricks the caller to accept this graphics mode for presentation. Applications originally use mmap to map the device memory area. In this case the regular file's content will be memory mapped. ~~A Windows WPF application periodically presents the content of this file (that resides in the temp folder of WSL) in a WPF window.~~ mmap returns the address of the remote memory address from which the content is periodically copied to loweagent's local buffer via process_vm_readv on a thread. An other thread is periodically sending the content of the local buffer to LoWeExposer through a network socket that displays the graphics content in a WPF window. 
+
+The dirty pages of mmap are still synced to /dev/fb0 due to a limitation reported here: https://github.com/Microsoft/BashOnWindows/issues/1491 . After fixing this issue further performance improvement is expected.
 
 ## Exposing ALSA
 

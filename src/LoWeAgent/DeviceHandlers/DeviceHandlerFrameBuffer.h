@@ -1,9 +1,8 @@
 #pragma once
 
 #include "CommunicatingDeviceHandler.h"
+#include "FrameBufferTransporter.h"
 #include <linux/fb.h>
-
-struct FrameBufferContext;
 
 class DeviceHandlerFrameBuffer : public CommunicatingDeviceHandler
 {
@@ -20,6 +19,6 @@ class DeviceHandlerFrameBuffer : public CommunicatingDeviceHandler
 		long _ioctlop;
 		long _ioctladdr;
 
-		static FrameBufferContext *_fbContext;
+		static FrameBufferTransporter *_frameBufferTransporter;
 };
 
