@@ -43,6 +43,8 @@ namespace LoWeExposer.Handlers
                 while (!_cancellationToken.IsCancellationRequested)
                 {
                     _socket = _tcpListener.AcceptSocket();
+                    _socket.NoDelay = true;
+
                     bool isInititalized = false;
                     while (!_cancellationToken.IsCancellationRequested && !_tcpListener.Pending() && _socket.Connected)
                     {

@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
@@ -22,6 +23,13 @@ bool SocketCommunicator::Open(const string address, const int port)
 	if(_fd < 0)
 	{
 		log.Debug("Socket open errno:", errno);
+		return false;
+	}
+
+	int flag = 1;
+	if(setsockopt(_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int)) < 0)
+	{
+		log.Debug("Error disabling Nagle algorithm for socket. Errno:", errno);
 		return false;
 	}
 	

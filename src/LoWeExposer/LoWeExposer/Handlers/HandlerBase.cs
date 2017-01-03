@@ -26,6 +26,8 @@ namespace LoWeExposer.Handlers
             _cancellationToken = _cancellationTokenSource.Token;
 
             _tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), Port);
+            _tcpListener.Server.NoDelay = true;
+
             _tcpListener.Start();
             Port = ((IPEndPoint)_tcpListener.LocalEndpoint).Port;
 
