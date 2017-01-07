@@ -3,6 +3,7 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 #include <time.h>
 #include <math.h>
 #include <unistd.h>
@@ -26,6 +27,15 @@ void DeviceHandler::SetFd(const long fd)
 
 void DeviceHandler::PokeData(long addr, void *dataInput, int len) const 
 {
+//	Why does the following code show errno 14 - EFAULT?
+/*	struct iovec local, remote;
+
+	local.iov_base = dataInput;
+	local.iov_len = len;
+	remote.iov_base = (void *)addr;
+	remote.iov_len = len;
+
+	process_vm_writev(_pid, &local, 1, &remote, 1, 0);*/
 	char *data = (char *)dataInput;
 	int chunkSize = sizeof(long);
 	int fullChunksEnd = (len/chunkSize)*chunkSize;
@@ -48,25 +58,14 @@ void DeviceHandler::PokeData(long addr, void *dataInput, int len) const
 }
 
 void DeviceHandler::PeekData(long addr, void *dataOutput, int len) const {
-	char *data = (char *)dataOutput;
-	int chunkSize = sizeof(long);
-	int fullChunksEnd = (len/chunkSize)*chunkSize;
-	int restLen = len - fullChunksEnd;	
+	struct iovec local, remote;
 
-	for(int i = 0;i < fullChunksEnd;i+=chunkSize) 
-	{
-		long val = ptrace(PTRACE_PEEKDATA, _pid, addr + i, 0);
-		*(long *)(&data[i]) = val;
-	}
+	local.iov_base = dataOutput;
+	local.iov_len = len;
+	remote.iov_base = (void *)addr;
+	remote.iov_len = len;
 
-	if(restLen > 0)
-	{
-		long val = ptrace(PTRACE_PEEKDATA, _pid, addr + fullChunksEnd, 0);
-	
-		char *dataAddr = (char*)&val;
-		for(int i = 0;i < restLen;i++)
-			data[fullChunksEnd + i] = dataAddr[i];
-	}
+	process_vm_readv(_pid, &local, 1, &remote, 1, 0);
 }
 
 bool DeviceHandler::IsDeviceAvailable()
