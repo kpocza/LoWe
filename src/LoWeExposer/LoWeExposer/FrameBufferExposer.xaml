@@ -9,6 +9,12 @@
         Loaded="FrameBufferExposer_Loaded"
         Closing="FrameBufferExposer_OnClosing">
     <Grid>
-        <Image x:Name="capture" Stretch="UniformToFill"></Image>
+        <Image x:Name="capture" Stretch="UniformToFill" ContextMenuService.IsEnabled="False">
+            <Image.ContextMenu>
+                <ContextMenu x:Name="contextMenu">
+                    <MenuItem Header="Paste" Click="ContextMenuPaste_OnClick"></MenuItem>
+                </ContextMenu>
+            </Image.ContextMenu>
+        </Image>
     </Grid>
 </Window>

@@ -163,61 +163,68 @@ namespace LoWeExposer
                 return;
             }
 
-            if (!_mouseEnabled || !_mouseCaptured)
-                return;
-
-            _miceState.LeftButtonDown = false;
-            EnqueueState();
+            if (_mouseEnabled && _mouseCaptured)
+            {
+                _miceState.LeftButtonDown = false;
+                EnqueueMouseState();
+            }
         }
 
         private void Capture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (!_mouseEnabled || !_mouseCaptured)
-                return;
-
-            _miceState.LeftButtonDown = true;
-            EnqueueState();
+            if (_mouseEnabled && _mouseCaptured)
+            {
+                _miceState.LeftButtonDown = true;
+                EnqueueMouseState();
+            }
         }
 
         private void Capture_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (!_mouseEnabled || !_mouseCaptured)
-                return;
-
-            _miceState.RightButtonDown = true;
-            EnqueueState();
+            if (_mouseEnabled && _mouseCaptured)
+            {
+                _miceState.RightButtonDown = true;
+                EnqueueMouseState();
+            }
         }
 
         private void Capture_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (!_mouseEnabled || !_mouseCaptured)
+            if (!_mouseCaptured)
+            {
+                this.contextMenu.IsOpen = true;
+                this.contextMenu.Visibility = Visibility.Visible;
                 return;
+            }
 
-            _miceState.RightButtonDown = false;
-            EnqueueState();
+            if (_mouseEnabled && _mouseCaptured)
+            {
+                _miceState.RightButtonDown = false;
+                EnqueueMouseState();
+            }
         }
 
         private void FrameBufferExposer_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!_mouseEnabled || !_mouseCaptured)
-                return;
+            if (_mouseEnabled && _mouseCaptured)
+            {
+                var pos = e.GetPosition(this.capture);
+                _lastPosition = pos;
 
-            var pos = e.GetPosition(this.capture);
-            _lastPosition = pos;
-
-            _miceState.X = (int) (1280.0*pos.X/capture.RenderSize.Width);
-            _miceState.Y = (int) (720.0*pos.Y/capture.RenderSize.Height);
-            EnqueueState();
+                _miceState.X = (int) (1280.0*pos.X/capture.RenderSize.Width);
+                _miceState.Y = (int) (720.0*pos.Y/capture.RenderSize.Height);
+                EnqueueMouseState();
+            }
         }
 
         private void Capture_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (!_mouseEnabled || !_mouseCaptured)
-                return;
-
-            _miceState.Wheel = e.Delta;
-            EnqueueState();
-            _miceState.Wheel = 0;
+            if (_mouseEnabled && _mouseCaptured)
+            {
+                _miceState.Wheel = e.Delta;
+                EnqueueMouseState();
+                _miceState.Wheel = 0;
+            }
         }
 
         [DllImport("User32.dll")]
@@ -225,10 +232,10 @@ namespace LoWeExposer
 
         private void Capture_MouseLeave(object sender, MouseEventArgs e)
         {
-            if (!_mouseEnabled || !_mouseCaptured)
-                return;
-
-            SetCursor(_lastPosition.X, _lastPosition.Y);
+            if (_mouseEnabled && _mouseCaptured)
+            {
+                SetCursor(_lastPosition.X, _lastPosition.Y);
+            }
         }
 
         private void SetCursor(double x, double y)
@@ -237,7 +244,7 @@ namespace LoWeExposer
             SetCursorPos((int) (x + capturePoint.X), (int) (y + capturePoint.Y));
         }
 
-        private void EnqueueState()
+        private void EnqueueMouseState()
         {
             _miceExposer.AddState(_miceState.Clone());
         }
@@ -255,11 +262,11 @@ namespace LoWeExposer
 
         private void FrameBufferExposer_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!_kbdEnabled)
-                return;
-
-            var scanCode = ResolveScanCode(e);
-            _kbdExposer.KeyDownPerformed((byte)scanCode);
+            if (_kbdEnabled)
+            {
+                var scanCode = ResolveScanCode(e);
+                _kbdExposer.KeyDownPerformed((byte) scanCode);
+            }
         }
 
         private void FrameBufferExposer_KeyUp(object sender, KeyEventArgs e)
@@ -269,11 +276,11 @@ namespace LoWeExposer
                 SwitchWindowMode();
             }
 
-            if (!_kbdEnabled)
-                return;
-
-            var scanCode = ResolveScanCode(e);
-            _kbdExposer.KeyUpPerformed((byte)scanCode);
+            if (_kbdEnabled)
+            {
+                var scanCode = ResolveScanCode(e);
+                _kbdExposer.KeyUpPerformed((byte) scanCode);
+            }
         }
 
         private uint ResolveScanCode(KeyEventArgs e)
@@ -316,6 +323,38 @@ namespace LoWeExposer
             ResizeMode = ResizeMode.NoResize;
             WindowStyle = WindowStyle.None;
             WindowState = WindowState.Maximized;
+        }
+
+        #endregion
+
+        #region Context menu
+
+        private void ContextMenuPaste_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (!_mouseCaptured && _kbdEnabled)
+            {
+                // send keys here
+            }
+        }
+
+        private void SendKey(Key key)
+        {
+            if (Keyboard.PrimaryDevice != null)
+            {
+                if (Keyboard.PrimaryDevice.ActiveSource != null)
+                {
+                    var e = new KeyEventArgs(Keyboard.PrimaryDevice, Keyboard.PrimaryDevice.ActiveSource, 0, key)
+                    {
+                        RoutedEvent = Keyboard.KeyDownEvent
+                    };
+                    InputManager.Current.ProcessInput(e);
+                    var e2 = new KeyEventArgs(Keyboard.PrimaryDevice, Keyboard.PrimaryDevice.ActiveSource, 0, key)
+                    {
+                        RoutedEvent = Keyboard.KeyUpEvent
+                    };
+                    InputManager.Current.ProcessInput(e2);
+                }
+            }
         }
 
         #endregion
