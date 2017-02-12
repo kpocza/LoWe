@@ -159,11 +159,10 @@ namespace LoWeExposer
                     _miceState.Reset();
                     _miceExposer.ClearQueue();
                 }
-
                 return;
             }
 
-            if (_mouseEnabled && _mouseCaptured)
+            if (IsMouseEnabledCaptured)
             {
                 _miceState.LeftButtonDown = false;
                 EnqueueMouseState();
@@ -172,7 +171,7 @@ namespace LoWeExposer
 
         private void Capture_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (_mouseEnabled && _mouseCaptured)
+            if (IsMouseEnabledCaptured)
             {
                 _miceState.LeftButtonDown = true;
                 EnqueueMouseState();
@@ -181,7 +180,7 @@ namespace LoWeExposer
 
         private void Capture_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (_mouseEnabled && _mouseCaptured)
+            if (IsMouseEnabledCaptured)
             {
                 _miceState.RightButtonDown = true;
                 EnqueueMouseState();
@@ -197,7 +196,7 @@ namespace LoWeExposer
                 return;
             }
 
-            if (_mouseEnabled && _mouseCaptured)
+            if (IsMouseEnabledCaptured)
             {
                 _miceState.RightButtonDown = false;
                 EnqueueMouseState();
@@ -206,7 +205,7 @@ namespace LoWeExposer
 
         private void FrameBufferExposer_MouseMove(object sender, MouseEventArgs e)
         {
-            if (_mouseEnabled && _mouseCaptured)
+            if (IsMouseEnabledCaptured)
             {
                 var pos = e.GetPosition(this.capture);
                 _lastPosition = pos;
@@ -219,7 +218,7 @@ namespace LoWeExposer
 
         private void Capture_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (_mouseEnabled && _mouseCaptured)
+            if (IsMouseEnabledCaptured)
             {
                 _miceState.Wheel = e.Delta;
                 EnqueueMouseState();
@@ -228,11 +227,11 @@ namespace LoWeExposer
         }
 
         [DllImport("User32.dll")]
-        private static extern bool SetCursorPos(int X, int Y);
+        private static extern bool SetCursorPos(int x, int y);
 
         private void Capture_MouseLeave(object sender, MouseEventArgs e)
         {
-            if (_mouseEnabled && _mouseCaptured)
+            if (IsMouseEnabledCaptured)
             {
                 SetCursor(_lastPosition.X, _lastPosition.Y);
             }
@@ -248,6 +247,8 @@ namespace LoWeExposer
         {
             _miceExposer.AddState(_miceState.Clone());
         }
+
+        private bool IsMouseEnabledCaptured => _mouseEnabled && _mouseCaptured;
 
         #endregion
 
@@ -333,26 +334,28 @@ namespace LoWeExposer
         {
             if (!_mouseCaptured && _kbdEnabled)
             {
-                // send keys here
-            }
-        }
+                var text = Clipboard.GetText();
+                if (string.IsNullOrEmpty(text))
+                    return;
 
-        private void SendKey(Key key)
-        {
-            if (Keyboard.PrimaryDevice != null)
-            {
-                if (Keyboard.PrimaryDevice.ActiveSource != null)
+                if (text.Length > 1000)
                 {
-                    var e = new KeyEventArgs(Keyboard.PrimaryDevice, Keyboard.PrimaryDevice.ActiveSource, 0, key)
+                    MessageBox.Show("Text is too long on the clipboard to paste", "LoWe");
+                    return;
+                }
+
+                foreach (var keyEvtArg in String2KeyEventConverter.ToEvents(text))
+                {
+                    int tryCount = 0;
+                    while (_kbdExposer.QueueLength > 20)
                     {
-                        RoutedEvent = Keyboard.KeyDownEvent
-                    };
-                    InputManager.Current.ProcessInput(e);
-                    var e2 = new KeyEventArgs(Keyboard.PrimaryDevice, Keyboard.PrimaryDevice.ActiveSource, 0, key)
-                    {
-                        RoutedEvent = Keyboard.KeyUpEvent
-                    };
-                    InputManager.Current.ProcessInput(e2);
+                        System.Threading.Thread.Sleep(10);
+                        tryCount++;
+
+                        if (tryCount > 200)
+                            return;
+                    }
+                    InputManager.Current.ProcessInput(keyEvtArg);
                 }
             }
         }

@@ -36,6 +36,17 @@ namespace LoWeExposer.Handlers
             }
         }
 
+        public int QueueLength
+        {
+            get
+            {
+                lock (_lockObj)
+                {
+                    return _keyData.Count;
+                }
+            }
+        }
+
         private void EnqueueItem(byte item)
         {
             if (_lastItem != item)

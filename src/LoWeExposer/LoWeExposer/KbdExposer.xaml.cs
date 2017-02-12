@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Windows.Controls;
 using LoWeExposer.Handlers;
 
@@ -65,5 +64,7 @@ namespace LoWeExposer
 
             ((ILineLogger)this).LogLine($"Keyup: {scanCode}");
         }
+
+        public int QueueLength => _kbdHandler.QueueLength;
     }
 }
