@@ -11,6 +11,7 @@ _OBJ=loweagent.o DeviceHandler.o DeviceHandlerRegistry.o DeviceHandlerFactory.o 
 		ArgsParser.o CommunicatingDeviceHandler.o SigActions.o \
 		$(DH)DeviceHandlerCatchAll.o $(DH)DeviceHandlerFrameBuffer.o $(DH)DeviceHandlerTTY.o \
 		$(DH)DeviceHandlerALSA.o $(DH)DeviceHandlerMice.o $(DH)DeviceHandlerKeyboard.o \
+		$(DH)DeviceHandlerEvMice.o $(DH)DeviceHandlerEvKeyboard.o \
 		$(DH)FrameBufferTransporter.o
 OBJ=$(patsubst %,$(OBJDIR)/%,$(_OBJ))
 
@@ -19,6 +20,7 @@ INC=DeviceHandler.h DeviceHandlerFactory.h DeviceHandlerRegistry.h ConfigHandler
 		ArgsParser.h CommunicatingDeviceHandler.h SigActions.h \
 		$(DH)DeviceHandlerCatchAll.h $(DH)DeviceHandlerFrameBuffer.h $(DH)DeviceHandlerTTY.h \
 		$(DH)DeviceHandlerALSA.h $(DH)DeviceHandlerMice.h $(DH)DeviceHandlerKeyboard.h \
+		$(DH)DeviceHandlerEvMice.h $(DH)DeviceHandlerEvKeyboard.h \
 		$(DH)FrameBufferTransporter.h
 
 all: credirs build

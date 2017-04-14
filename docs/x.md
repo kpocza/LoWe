@@ -1,4 +1,4 @@
-# Running graphical apps on Window Maker on X.Org
+# Running graphical apps on Window Maker on X.Org (W10 RedStone 2 - Ubuntu 16 LTS)
 
 Executing X-based graphical apps is a bit circumstantial at the moment. Simplification is expected in the future.
 
@@ -9,14 +9,14 @@ This documentation contains two ways of starting X. It's recommended to first em
 The following additional packages are to be installed:
 
 - xserver-xorg
-- xserver-xorg-input-kbd
+- xserver-xorg-input-evdev
 - wmaker
 
 Execute
 
 ```
 sudo apt install xserver-xorg
-sudo apt install xserver-xorg-input-kbd
+sudo apt install xserver-xorg-input-evdev
 sudo apt install wmaker
 ```
 
