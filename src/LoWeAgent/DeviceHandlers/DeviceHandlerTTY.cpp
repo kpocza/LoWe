@@ -11,6 +11,7 @@ DeviceHandlerTTY::DeviceHandlerTTY(const pid_t pid, const string openpath): Devi
 
 	memset(&_vt_stat, 0, sizeof(_vt_stat));
 	memset(&_vt_mode, 0, sizeof(_vt_mode));
+	memset(&_termios, 0, sizeof(_termios));
 	_kdmode = KD_TEXT;
 	_kbmode = 0;
 }
@@ -41,11 +42,11 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 		_log.Info("-= Before open =-");
 		if(_openpath == "/dev/tty0")
 		{
-			char tty[16];
-			PeekData(regs.rdi, tty, 16);
+			char tty[9];
+			PeekData(regs.rdi, tty, 9);
 			// /dev/tty0 -> /dev/tty
 			tty[8] = 0;
-			PokeData(regs.rdi, tty, 16);
+			PokeData(regs.rdi, tty, 9);
 			_log.Info("/dev/tty0 -> /dev/tty");
 		}	
 	}
@@ -76,6 +77,11 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 			_log.Info("VT_WAITACTIVE");
 			regs.orig_rax = -1;
 		}
+		else if(_ioctlop == VT_RELDISP)
+		{
+			_log.Info("VT_RELDISP");
+			regs.orig_rax = -1;
+		}
 		else if(_ioctlop == VT_GETMODE)
 		{
 			_log.Info("VT_GETMODE");
@@ -104,6 +110,16 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 		else if(_ioctlop == TIOCLINUX)
 		{
 			_log.Info("TIOCLINUX");
+			regs.orig_rax = -1;
+		}
+		else if(_ioctlop == TCGETS)
+		{
+			_log.Info("TCGETS");
+			regs.orig_rax = -1;
+		}
+		else if(_ioctlop == TCSETS)
+		{
+			_log.Info("TCSETS");
 			regs.orig_rax = -1;
 		}
 		else
@@ -152,6 +168,11 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 			_log.Info("VT_WAITACTIVE");
 			regs.rax = 0;
 		}
+		else if(_ioctlop == VT_RELDISP)
+		{
+			_log.Info("VT_RELDISP");
+			regs.rax = 0;
+		}
 		else if(_ioctlop == VT_GETMODE)
 		{
 			_log.Info("VT_GETMODE");
@@ -185,6 +206,18 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		else if(_ioctlop == TIOCLINUX)
 		{
 			_log.Info("TIOCLINUX");
+			regs.rax = 0;
+		}
+		else if(_ioctlop == TCGETS)
+		{
+			_log.Info("TCGETS");
+//			PokeData(_ioctladdr, &_termios, sizeof(_termios));
+			regs.rax = 0;
+		}
+		else if(_ioctlop == TCSETS)
+		{
+			_log.Info("TCSETS");
+//			PeekData(_ioctladdr, &_termios, sizeof(_termios));
 			regs.rax = 0;
 		}
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);

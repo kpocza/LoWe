@@ -16,7 +16,6 @@ Execute
 
 ```
 sudo apt install xserver-xorg
-sudo apt install xserver-xorg-input-evdev
 sudo apt install wmaker
 ```
 

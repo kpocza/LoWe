@@ -173,17 +173,6 @@ void DeviceHandlerEvKeyboard::ExecuteAfter(const long syscall, user_regs_struct 
 
 	if(_syscallbefore == SYS_open)
 	{
-		if(_socketCommunicator.Open("127.0.0.1", GetPort()))
-		{
-			_log.Info("socket opened");
-			SendOpcode("INIT");
-			_isEnabled = true;
-		}
-		else 
-		{
-			_log.Error("socket open failed");
-			_isEnabled = false;
-		}
 	}
 	else if(_syscallbefore == SYS_ioctl) 
 	{
@@ -196,71 +185,65 @@ void DeviceHandlerEvKeyboard::ExecuteAfter(const long syscall, user_regs_struct 
 		else if(_ioctlop == EVIOCGBIT(0, sizeof(ev)))
 		{
 			_log.Info("EVIOCGBIT_0");
-			long ev = 1<<EV_KEY;
+			long ev = 1LL << EV_KEY;
 			PokeData(_ioctladdr, &ev, sizeof(ev));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGBIT(EV_REL, sizeof(relbits)))
 		{
 			_log.Info("EVIOCGBIT_EV_REL");
-			relbits[0]=0;
 			PokeData(_ioctladdr, relbits, sizeof(relbits));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGBIT(EV_ABS, sizeof(absbits)))
 		{
 			_log.Info("EVIOCGBIT_EV_ABS");
-			absbits[0]=0;
 			PokeData(_ioctladdr, absbits, sizeof(absbits));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGBIT(EV_LED, sizeof(ledbits)))
 		{
 			_log.Info("EVIOCGBIT_EV_LED");
-			ledbits[0]=0;
 			PokeData(_ioctladdr, ledbits, sizeof(ledbits));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGBIT(EV_KEY, sizeof(keybits)))
 		{
 			_log.Info("EVIOCGBIT_EV_KEY");
-			keybits[0]=0xff;
+			keybits[0]=(unsigned long)0xffffffffffffffff;
+			keybits[1]=(unsigned long)0xffffffffffffffff;
 			PokeData(_ioctladdr, keybits, sizeof(keybits));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGBIT(EV_SW, sizeof(swbits)))
 		{
 			_log.Info("EVIOCGBIT_EV_SW");
-			swbits[0]=0;
 			PokeData(_ioctladdr, swbits, sizeof(swbits));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGBIT(EV_MSC, sizeof(mscbits)))
 		{
 			_log.Info("EVIOCGBIT_EV_MSC");
-			mscbits[0]=0;
 			PokeData(_ioctladdr, mscbits, sizeof(mscbits));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGBIT(EV_FF, sizeof(ffbits)))
 		{
 			_log.Info("EVIOCGBIT_EV_FF");
-			ffbits[0]=0;
 			PokeData(_ioctladdr, ffbits, sizeof(ffbits));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGBIT(EV_SND, sizeof(sndbits)))
 		{
 			_log.Info("EVIOCGBIT_EV_SND");
-			sndbits[0]=0;
 			PokeData(_ioctladdr, sndbits, sizeof(sndbits));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGNAME(255))
 		{
 			_log.Info("EVIOCGNAME_255");
-			const char *name="mouse";
-			PokeData(_ioctladdr, (void *)name, 6);
+			const char *name="kbd";
+			PokeData(_ioctladdr, (void *)name, 4);
 			regs.rax = 0;
 		}
 		else if(_ioctlop == EVIOCGPHYS(255))
@@ -325,6 +308,17 @@ void DeviceHandlerEvKeyboard::ExecuteAfter(const long syscall, user_regs_struct 
 		else if(_ioctlop == TCFLSH)
 		{
 			_log.Info("TCFLSH");
+			if(_socketCommunicator.Open("127.0.0.1", GetPort()))
+			{
+				_log.Info("socket opened");
+				SendOpcode("INIT");
+				_isEnabled = true;
+			}
+			else 
+			{
+				_log.Error("socket open failed");
+				_isEnabled = false;
+			}
 			regs.rax = 0;
 		}
 
@@ -343,12 +337,13 @@ void DeviceHandlerEvKeyboard::ExecuteAfter(const long syscall, user_regs_struct 
 				_log.Debug("-= After read =-");
 				_socketCommunicator.Send((char *)&_readlen, 4);
 				_socketCommunicator.Recv((char *)&size, 4);
-				if(size > 0)
-				{
-					char results[size];
-					_socketCommunicator.Recv((char *)&results, size);
-					PokeData(_readaddr, &results, size);
-				}
+//				if(size > 0)
+//				{
+//					char results[size];
+//					_socketCommunicator.Recv((char *)&results, size);
+//					PokeData(_readaddr, &results, size);
+//				}
+				size = 0;
 			}
 		}
 		regs.rax = size;
