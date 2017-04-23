@@ -3,8 +3,6 @@ Linux on Windows extender.
 
 Ubuntu on Windows (WSL) released with Windows 10 Anniversary Update runs console based Linux apps on top of the Windows Kernel, not even all of them. The goal of this project is to extend the current functionality of Ubuntu on Windows with support for X apps, video, and sound. Reliability, UX, functionality improvements are expected in the future.
 
-**This branch supports Windows 10 Anniversary Update only with Ubuntu 14 LTS. Windows 10 Creators Update running Ubuntu 16 LTS support is under heavy construction in branch w10rs2u16 which is not fully working yet.** 
-
 Feedback is welcome.
 
 ### Bash on Ubuntu on Windows and WSL can really play video and music.
