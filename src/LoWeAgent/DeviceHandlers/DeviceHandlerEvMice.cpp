@@ -386,7 +386,7 @@ void DeviceHandlerEvMice::ExecuteAfter(const long syscall, user_regs_struct &reg
 			if(now - _lastMillisec > 100)
 			{
 				_lastMillisec = now;
-				SendOpcode("REAB");
+				SendOpcode("READ");
 				char resp[1+2*4+1];
 				_socketCommunicator.Recv((char *)&resp, 10);
 
@@ -404,62 +404,62 @@ void DeviceHandlerEvMice::ExecuteAfter(const long syscall, user_regs_struct &reg
 				gettimeofday(&t, NULL);
 				if(_lastLeftButton!= leftButtonDown)
 				{
-					events[cnt].time = t;
-					events[cnt].type = EV_KEY;
-					events[cnt].code = BTN_LEFT;
-					events[cnt].value = leftButtonDown ? 1 : 0;
+					_events[cnt].time = t;
+					_events[cnt].type = EV_KEY;
+					_events[cnt].code = BTN_LEFT;
+					_events[cnt].value = leftButtonDown ? 1 : 0;
 					cnt++;
 					_lastLeftButton = leftButtonDown;
 				}
 
 				if(_lastRightButton!= rightButtonDown)
 				{
-					events[cnt].time = t;
-					events[cnt].type = EV_KEY;
-					events[cnt].code = BTN_RIGHT;
-					events[cnt].value = rightButtonDown ? 1 : 0;
+					_events[cnt].time = t;
+					_events[cnt].type = EV_KEY;
+					_events[cnt].code = BTN_RIGHT;
+					_events[cnt].value = rightButtonDown ? 1 : 0;
 					cnt++;
 					_lastRightButton = rightButtonDown;
 				}
 
 				if(_lastX!= xabs)
 				{
-					events[cnt].time = t;
-					events[cnt].type = EV_ABS;
-					events[cnt].code = ABS_X;
-					events[cnt].value = xabs;
+					_events[cnt].time = t;
+					_events[cnt].type = EV_ABS;
+					_events[cnt].code = ABS_X;
+					_events[cnt].value = xabs;
 					cnt++;
 					_lastX = xabs;
 				}
 
 				if(_lastY!= yabs)
 				{
-					events[cnt].time = t;
-					events[cnt].type = EV_ABS;
-					events[cnt].code = ABS_Y;
-					events[cnt].value = yabs;
+					_events[cnt].time = t;
+					_events[cnt].type = EV_ABS;
+					_events[cnt].code = ABS_Y;
+					_events[cnt].value = yabs;
 					cnt++;
 					_lastY = yabs;
 				}
 				
 				if(wheel!= 0)
 				{
-					events[cnt].time = t;
-					events[cnt].type = EV_KEY;
-					events[cnt].code = BTN_WHEEL;
-					events[cnt].value = wheel;
+					_events[cnt].time = t;
+					_events[cnt].type = EV_KEY;
+					_events[cnt].code = BTN_WHEEL;
+					_events[cnt].value = wheel;
 					cnt++;
 				}
 
 				if(cnt > 0)
 				{
-					events[cnt].time = t;
-					events[cnt].type = EV_SYN;
-					events[cnt].code = SYN_REPORT;
-					events[cnt].value = 0;
+					_events[cnt].time = t;
+					_events[cnt].type = EV_SYN;
+					_events[cnt].code = SYN_REPORT;
+					_events[cnt].value = 0;
 					cnt++;
 					size = cnt * sizeof(input_event);
-					PokeData(_readaddr, events, size);
+					PokeData(_readaddr, _events, size);
 				}
 			}
 			else
@@ -471,10 +471,9 @@ void DeviceHandlerEvMice::ExecuteAfter(const long syscall, user_regs_struct &reg
 		{
 			if(size > 0)
 			{
-				char *data = new char[size];
+				char data[size];
 				memset(data, 0, size);
 				PokeData(_readaddr, data, size);
-				delete data;
 			}
 		}
 

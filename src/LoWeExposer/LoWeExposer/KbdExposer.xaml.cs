@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Controls;
+using System.Windows.Input;
 using LoWeExposer.Handlers;
 
 namespace LoWeExposer
@@ -51,18 +52,18 @@ namespace LoWeExposer
             Dispatcher.BeginInvoke((Action)(() => AddLine(line)));
         }
 
-        public void KeyDownPerformed(byte scanCode)
+        public void KeyDownPerformed(KeyEventArgs e)
         {
-            _kbdHandler.KeyDownPerformed(scanCode);
-
-            ((ILineLogger)this).LogLine($"Keydown: {scanCode}");
+            _kbdHandler.KeyDownPerformed(e);
+            
+            ((ILineLogger)this).LogLine($"Keydown: {(e.Key!= Key.System ? e.Key : e.SystemKey)}");
         }
 
-        public void KeyUpPerformed(byte scanCode)
+        public void KeyUpPerformed(KeyEventArgs e)
         {
-            _kbdHandler.KeyUpPerformed(scanCode);
+            _kbdHandler.KeyUpPerformed(e);
 
-            ((ILineLogger)this).LogLine($"Keyup: {scanCode}");
+            ((ILineLogger)this).LogLine($"Keyup: {(e.Key != Key.System ? e.Key : e.SystemKey)}");
         }
 
         public int QueueLength => _kbdHandler.QueueLength;

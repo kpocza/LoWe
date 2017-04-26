@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Windows.Input;
 
 namespace LoWeExposer.Handlers
 {
@@ -20,19 +21,21 @@ namespace LoWeExposer.Handlers
             _lastItem = 0xff;
         }
 
-        public void KeyDownPerformed(byte scanCode)
+        public void KeyDownPerformed(KeyEventArgs e)
         {
             lock (_lockObj)
             {
-                EnqueueItem(scanCode);
+                int keyCode = KeyCodeConverter.ToKeyCode(e);
+                EnqueueItem((byte)(keyCode | 0x80));
             }
         }
 
-        public void KeyUpPerformed(byte scanCode)
+        public void KeyUpPerformed(KeyEventArgs e)
         {
             lock (_lockObj)
             {
-                EnqueueItem((byte)(scanCode | 0x80));
+                int keyCode = KeyCodeConverter.ToKeyCode(e);
+                EnqueueItem((byte)keyCode);
             }
         }
 

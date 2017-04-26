@@ -27,6 +27,7 @@ class DeviceHandlerEvKeyboard : public CommunicatingDeviceHandler
 
 		bool _isEnabled;
 		long _lastMillisec;
+		struct input_event _events[100];
 		
 		long relbits[NBITS(REL_MAX + 1)]={0};
 		long absbits[NBITS(ABS_MAX + 1)]={0};

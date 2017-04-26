@@ -31,7 +31,7 @@ class DeviceHandlerEvMice : public CommunicatingDeviceHandler
 		bool _lastRightButton;
 		int _lastX;
 		int _lastY;
-		struct input_event events[6];
+		struct input_event _events[6];
 	
 		long relbits[NBITS(REL_MAX + 1)]={0};
 		long absbits[NBITS(ABS_MAX + 1)]={0};

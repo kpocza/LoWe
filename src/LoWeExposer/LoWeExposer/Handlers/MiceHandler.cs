@@ -63,7 +63,7 @@ namespace LoWeExposer.Handlers
                         {
                             isInititalized = true;
                         }
-                        else if (IsOperation(opCode, "READ") || IsOperation(opCode, "REAB"))
+                        else if (IsOperation(opCode, "READ"))
                         {
                             if (!isInititalized)
                                 break;
@@ -77,6 +77,8 @@ namespace LoWeExposer.Handlers
                                     {
                                         respData[0] = (byte) ((_lastReadState.LeftButtonDown ? 1 : 0) +
                                                               (_lastReadState.RightButtonDown ? 2 : 0));
+                                        Array.Copy(BitConverter.GetBytes(_lastReadState.X), 0, respData, 1, 4);
+                                        Array.Copy(BitConverter.GetBytes(_lastReadState.Y), 0, respData, 5, 4);
                                     }
                                 }
                                 else
@@ -111,18 +113,8 @@ namespace LoWeExposer.Handlers
                                     respData[0] = (byte) ((actualCurrentState.LeftButtonDown ? 1 : 0) +
                                                           (actualCurrentState.RightButtonDown ? 2 : 0));
 
-                                    if (IsOperation(opCode, "READ"))
-                                    {
-                                        int xdiff = actualCurrentState.X - _lastReadState.X;
-                                        int ydiff = actualCurrentState.Y - _lastReadState.Y;
-                                        Array.Copy(BitConverter.GetBytes(xdiff), 0, respData, 1, 4);
-                                        Array.Copy(BitConverter.GetBytes(ydiff), 0, respData, 5, 4);
-                                    }
-                                    else
-                                    {
-                                        Array.Copy(BitConverter.GetBytes(actualCurrentState.X), 0, respData, 1, 4);
-                                        Array.Copy(BitConverter.GetBytes(actualCurrentState.Y), 0, respData, 5, 4);
-                                    }
+                                    Array.Copy(BitConverter.GetBytes(actualCurrentState.X), 0, respData, 1, 4);
+                                    Array.Copy(BitConverter.GetBytes(actualCurrentState.Y), 0, respData, 5, 4);
 
                                     byte wheel = 0;
                                     if (actualCurrentState.Wheel < 0)
