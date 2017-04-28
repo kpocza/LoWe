@@ -101,8 +101,8 @@ namespace LoWeExposer.Handlers
                                                 peekItem.RightButtonDown != actualCurrentState.RightButtonDown)
                                                 break;
 
-                                            if (Math.Abs(peekItem.X - _lastReadState.X) >= 100 ||
-                                                Math.Abs(peekItem.Y - _lastReadState.Y) >= 100)
+                                            if (Math.Abs(peekItem.X - _lastReadState.X) >= 300 ||
+                                                Math.Abs(peekItem.Y - _lastReadState.Y) >= 300)
                                                 break;
 
                                             actualCurrentState = _states.Dequeue();

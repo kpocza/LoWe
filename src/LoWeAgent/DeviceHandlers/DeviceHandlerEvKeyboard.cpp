@@ -363,7 +363,7 @@ void DeviceHandlerEvKeyboard::ExecuteAfter(const long syscall, user_regs_struct 
 					_events[cnt].code = SYN_REPORT;
 					_events[cnt].value = 0;
 
-					size = sizeof(_events[0]) * cnt;
+					size = sizeof(_events[0]) * (cnt+1);
 					PokeData(_readaddr, &_events, size);
 				}
 			}
