@@ -1,4 +1,4 @@
-# Running graphical apps on Window Maker on X.Org (W10 RedStone 2 - Ubuntu 16 LTS)
+# Running graphical apps on Unity on X.Org (W10 RedStone 2 - Ubuntu 16 LTS)
 
 Executing X-based graphical apps is a bit circumstantial at the moment. Simplification is expected in the future.
 
@@ -10,13 +10,13 @@ The following additional packages are to be installed:
 
 - xserver-xorg
 - xserver-xorg-input-evdev
-- wmaker
+- unity or icewm or fvwm (or wmaker)
 
 Execute
 
 ```
 sudo apt install xserver-xorg
-sudo apt install wmaker
+sudo apt install unity
 ```
 
 Copy the 9-lowe.conf from the configs folder of the local git repository to ```/usr/share/X11/xorg.conf.d/9-lowe.conf```.
@@ -25,6 +25,8 @@ The content of the file should look like as follows:
 
 ![xorgconfig](img/x/01_config.jpg "X.Org config")
 
+If you are upgrading from W10 Anniversary Update please add the UseSIGIO option as seen above.
+
 Install any additional packages, eg. xterm, firefox, libreoffice, etc.
 
 ## Steps to follow - Complex way
@@ -32,7 +34,7 @@ Install any additional packages, eg. xterm, firefox, libreoffice, etc.
 1. You need to start three instances of Bash
    - The first one will run loweagent (cd to the out folder of loweagent)
    - The second one will run the X server
-   - The third one will run Window Maker the windowing system
+   - The third one will run Unity the windowing system
 
    The **first one** must **switch to root** via ```sudo su```. The reason is that X is a setuid root program so that the tracer should run as root, as well.
 2. You have to also start LoWeExposer
@@ -63,23 +65,23 @@ Install any additional packages, eg. xterm, firefox, libreoffice, etc.
 
 It can happen that loweagent doesn't catch the X process. In this case X needs to be rerun (sometimes several times). In the future loweagent will have the ability to start the application and don't try to attach to a process that has been just started.
 
-6. Start Window Maker in the third Bash
+6. Start Unity in the third Bash
 
-The DISPLAY env var needs to be exported and the wmaker process is to be started:
+The DISPLAY env var needs to be exported and the unity process is to be started:
 
 ```
 export DISPLAY=:0
-wmaker
+unity
 ```
 Like this:
 
-![start wmaker](img/x/05_startwmaker.jpg "Starting Window Maker")
+![start unity](img/x/05_startunity.jpg "Starting Unity")
 
-8. Run X programs in wmaker
+8. Run X programs in unity
 
    The actual GUI is presented through the Framebuffer Exposer window. If it has focus, the keyboard input is forwarded to X. To capture (and release) mouse hold the Ctrl+Alt keys and click the left mouse button on top of the mouse cursor presented in the above mentioned window.
 
-![run progs](img/x/06_wmakerrunning.jpg "Run graphical apps")
+![run progs](img/x/06_unityrunning.jpg "Run graphical apps")
 
 ## Steps to follow - Simplified way
 
@@ -88,4 +90,4 @@ The same effect can be achieved by additional parameterization loweagent that wi
 1. Two Bash windows are enough
 2. LoWeExposer has to be started in the same way as described above
 3. Starting ```sudo loweagent -e "X -o x.log"``` will start and attach to the X process
-4. In the second window the ```export DISPLAY=:0``` and ```wmaker``` commands are to be executed
+4. In the second window the ```export DISPLAY=:0``` and ```unity``` commands are to be executed

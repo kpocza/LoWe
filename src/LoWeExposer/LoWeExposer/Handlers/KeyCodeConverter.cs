@@ -5,7 +5,6 @@ namespace LoWeExposer.Handlers
 {
     class KeyCodeConverter
     {
-
         internal static byte ToKeyCode(KeyEventArgs keyEventArgs)
         {
             var key = keyEventArgs.Key;
@@ -14,12 +13,12 @@ namespace LoWeExposer.Handlers
                 key = keyEventArgs.SystemKey;
 
             KeyCode value = KeyCode.KEY_NONE;
-            _conversionTable.TryGetValue(key, out value);
+            ConversionTable.TryGetValue(key, out value);
 
             return (byte)value;
         }
 
-        private static Dictionary<Key, KeyCode> _conversionTable = new Dictionary<Key, KeyCode>
+        private static readonly Dictionary<Key, KeyCode> ConversionTable = new Dictionary<Key, KeyCode>
         {
             { Key.Escape, KeyCode.KEY_ESC},
             { Key.D1, KeyCode.KEY_1},
@@ -75,7 +74,6 @@ namespace LoWeExposer.Handlers
             { Key.OemPeriod, KeyCode.KEY_DOT},
             { Key.Oem2, KeyCode.KEY_SLASH},
             { Key.RightShift, KeyCode.KEY_RIGHTSHIFT},
-            //{ Key., KeyCode.KEY_KPASTERISK},
             { Key.LeftAlt, KeyCode.KEY_LEFTALT},
             { Key.Space, KeyCode.KEY_SPACE},
             { Key.CapsLock, KeyCode.KEY_CAPSLOCK},
@@ -91,19 +89,21 @@ namespace LoWeExposer.Handlers
             { Key.F10, KeyCode.KEY_F10},
             { Key.NumLock, KeyCode.KEY_NUMLOCK},
             { Key.Scroll, KeyCode.KEY_SCROLLLOCK},
-            { Key.NumPad7, KeyCode.KEY_KP7},
-            { Key.NumPad8, KeyCode.KEY_KP8},
-            { Key.NumPad9, KeyCode.KEY_KP9},
-            //{ Key.OemMinus, KeyCode.KEY_KPMINUS},
-            { Key.NumPad4, KeyCode.KEY_KP4},
-            { Key.NumPad5, KeyCode.KEY_KP5},
-            { Key.NumPad6, KeyCode.KEY_KP6},
-            //{ Key.OemPlus, KeyCode.KEY_KPPLUS},
-            { Key.NumPad1, KeyCode.KEY_KP1},
-            { Key.NumPad2, KeyCode.KEY_KP2},
-            { Key.NumPad3, KeyCode.KEY_KP3},
-            { Key.NumPad0, KeyCode.KEY_KP0},
-            //{ Key.OemPeriod, KeyCode.KEY_KPDOT},
+            { Key.NumPad7, KeyCode.KEY_7},
+            { Key.NumPad8, KeyCode.KEY_8},
+            { Key.NumPad9, KeyCode.KEY_9},
+            { Key.Subtract, KeyCode.KEY_KPMINUS},
+            { Key.NumPad4, KeyCode.KEY_4},
+            { Key.NumPad5, KeyCode.KEY_5},
+            { Key.NumPad6, KeyCode.KEY_6},
+            { Key.Add, KeyCode.KEY_KPPLUS},
+            { Key.NumPad1, KeyCode.KEY_1},
+            { Key.NumPad2, KeyCode.KEY_2},
+            { Key.NumPad3, KeyCode.KEY_3},
+            { Key.NumPad0, KeyCode.KEY_0},
+            { Key.Multiply, KeyCode.KEY_KPASTERISK},
+            { Key.Divide, KeyCode.KEY_KPSLASH},
+            { Key.Decimal, KeyCode.KEY_KPDOT },
             { Key.F11, KeyCode.KEY_F11},
             { Key.F12, KeyCode.KEY_F12},
             //{ Key.Enter, KeyCode.KEY_KPENTER},

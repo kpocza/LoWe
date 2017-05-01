@@ -118,9 +118,9 @@ namespace LoWeExposer.Handlers
 
                                     byte wheel = 0;
                                     if (actualCurrentState.Wheel < 0)
-                                        wheel = 1;
-                                    if (actualCurrentState.Wheel > 0)
                                         wheel = 0xff;
+                                    if (actualCurrentState.Wheel > 0)
+                                        wheel = 1;
                                     respData[9] = wheel;
 
                                     _lastReadState = actualCurrentState;

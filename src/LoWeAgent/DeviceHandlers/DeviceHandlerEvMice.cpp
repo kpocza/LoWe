@@ -205,6 +205,7 @@ void DeviceHandlerEvMice::ExecuteAfter(const long syscall, user_regs_struct &reg
 		else if(_ioctlop == EVIOCGBIT(EV_REL, sizeof(relbits)))
 		{
 			_log.Info("EVIOCGBIT_EV_REL");
+			relbits[REL_WHEEL/BITS_PER_LONG]|=(1LL << (REL_WHEEL % BITS_PER_LONG));
 			PokeData(_ioctladdr, relbits, sizeof(relbits));
 			regs.rax = 0;
 		}
@@ -445,8 +446,8 @@ void DeviceHandlerEvMice::ExecuteAfter(const long syscall, user_regs_struct &reg
 				if(wheel!= 0)
 				{
 					_events[cnt].time = t;
-					_events[cnt].type = EV_KEY;
-					_events[cnt].code = BTN_WHEEL;
+					_events[cnt].type = EV_REL;
+					_events[cnt].code = REL_WHEEL;
 					_events[cnt].value = wheel;
 					cnt++;
 				}
