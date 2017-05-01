@@ -10,10 +10,7 @@ DeviceHandlerRegistry::DeviceHandlerRegistry()
 
 void DeviceHandlerRegistry::Register(const long fd, DeviceHandler *deviceHandler)
 {
-	if(_deviceHandlers.find(fd)!= _deviceHandlers.end())
-	{
-		Unregister(fd);	
-	}
+	Unregister(fd);	
 
 	deviceHandler->SetFd(fd);
 	_deviceHandlers.insert(pair<long, DeviceHandler*>(fd, deviceHandler));
@@ -21,7 +18,10 @@ void DeviceHandlerRegistry::Register(const long fd, DeviceHandler *deviceHandler
 
 void DeviceHandlerRegistry::Unregister(const long fd)
 {
-	_deviceHandlers.erase(fd);
+	if(_deviceHandlers.find(fd)!= _deviceHandlers.end())
+	{
+		_deviceHandlers.erase(fd);
+	}
 }
 
 DeviceHandler *DeviceHandlerRegistry::Lookup(const long fd)

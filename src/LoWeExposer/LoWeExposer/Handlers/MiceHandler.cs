@@ -77,6 +77,8 @@ namespace LoWeExposer.Handlers
                                     {
                                         respData[0] = (byte) ((_lastReadState.LeftButtonDown ? 1 : 0) +
                                                               (_lastReadState.RightButtonDown ? 2 : 0));
+                                        Array.Copy(BitConverter.GetBytes(_lastReadState.X), 0, respData, 1, 4);
+                                        Array.Copy(BitConverter.GetBytes(_lastReadState.Y), 0, respData, 5, 4);
                                     }
                                 }
                                 else
@@ -99,8 +101,8 @@ namespace LoWeExposer.Handlers
                                                 peekItem.RightButtonDown != actualCurrentState.RightButtonDown)
                                                 break;
 
-                                            if (Math.Abs(peekItem.X - _lastReadState.X) >= 100 ||
-                                                Math.Abs(peekItem.Y - _lastReadState.Y) >= 100)
+                                            if (Math.Abs(peekItem.X - _lastReadState.X) >= 300 ||
+                                                Math.Abs(peekItem.Y - _lastReadState.Y) >= 300)
                                                 break;
 
                                             actualCurrentState = _states.Dequeue();
@@ -108,19 +110,17 @@ namespace LoWeExposer.Handlers
 
                                     }
 
-                                    int xdiff = actualCurrentState.X - _lastReadState.X;
-                                    int ydiff = actualCurrentState.Y - _lastReadState.Y;
-
                                     respData[0] = (byte) ((actualCurrentState.LeftButtonDown ? 1 : 0) +
                                                           (actualCurrentState.RightButtonDown ? 2 : 0));
-                                    Array.Copy(BitConverter.GetBytes(xdiff), 0, respData, 1, 4);
-                                    Array.Copy(BitConverter.GetBytes(ydiff), 0, respData, 5, 4);
+
+                                    Array.Copy(BitConverter.GetBytes(actualCurrentState.X), 0, respData, 1, 4);
+                                    Array.Copy(BitConverter.GetBytes(actualCurrentState.Y), 0, respData, 5, 4);
 
                                     byte wheel = 0;
                                     if (actualCurrentState.Wheel < 0)
-                                        wheel = 1;
-                                    if (actualCurrentState.Wheel > 0)
                                         wheel = 0xff;
+                                    if (actualCurrentState.Wheel > 0)
+                                        wheel = 1;
                                     respData[9] = wheel;
 
                                     _lastReadState = actualCurrentState;

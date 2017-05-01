@@ -60,6 +60,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Handlers\KeyCodeConverter.cs" />
     <Compile Include="String2KeyEventConverter.cs" />
     <Page Include="KbdExposer.xaml">
       <Generator>MSBuild:Compile</Generator>

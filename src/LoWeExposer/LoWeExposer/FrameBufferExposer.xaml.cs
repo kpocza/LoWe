@@ -22,7 +22,6 @@ namespace LoWeExposer
         private bool _mouseCaptured;
         private Point _lastPosition;
         private readonly MiceState _miceState;
-        private IntPtr _hKl;
         private bool _isFullScreen;
 
         public FrameBufferExposer()
@@ -258,15 +257,13 @@ namespace LoWeExposer
         {
             _kbdExposer = kbdExposer;
             _kbdEnabled = true;
-            _hKl = GetKeyboardLayout(0);
         }
 
         private void FrameBufferExposer_KeyDown(object sender, KeyEventArgs e)
         {
             if (_kbdEnabled)
             {
-                var scanCode = ResolveScanCode(e);
-                _kbdExposer.KeyDownPerformed((byte) scanCode);
+                _kbdExposer.KeyDownPerformed(e);
             }
         }
 
@@ -279,22 +276,9 @@ namespace LoWeExposer
 
             if (_kbdEnabled)
             {
-                var scanCode = ResolveScanCode(e);
-                _kbdExposer.KeyUpPerformed((byte) scanCode);
+                _kbdExposer.KeyUpPerformed(e);
             }
         }
-
-        private uint ResolveScanCode(KeyEventArgs e)
-        {
-            var virtualKey = (uint)KeyInterop.VirtualKeyFromKey(e.Key != Key.System ? e.Key : e.SystemKey);
-            return MapVirtualKeyEx(virtualKey, 4, _hKl);
-        }
-
-        [DllImport("user32.dll")]
-        static extern IntPtr GetKeyboardLayout(uint idThread);
-
-        [DllImport("user32.dll")]
-        static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
 
         #endregion
 

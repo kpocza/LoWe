@@ -195,6 +195,12 @@ void DeviceHandlerALSA::ExecuteBeforePCM(const long syscall, user_regs_struct &r
 		{
 			_log.Debug("-= Before PCM Device ioctl - SNDRV_PCM_IOCTL_STATUS =-");
 		}
+#ifdef SNDRV_PCM_IOCTL_STATUS_EXT 
+		else if(_ioctlop == SNDRV_PCM_IOCTL_STATUS_EXT)
+		{
+			_log.Debug("-= Before PCM Device ioctl - SNDRV_PCM_IOCTL_STATUS_EXT =-");
+		}
+#endif
 		else if(_ioctlop == SNDRV_PCM_IOCTL_DELAY)
 		{
 			_log.Debug("-= Before PCM Device ioctl - SNDRV_PCM_IOCTL_DELAY =-");
@@ -365,6 +371,30 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			PokeData(_ioctladdr, &_snd_pcm_status, sizeof(_snd_pcm_status));
 			regs.rax = 0;
 		}
+#ifdef SNDRV_PCM_IOCTL_STATUS_EXT 
+		else if(_ioctlop == SNDRV_PCM_IOCTL_STATUS_EXT)
+		{
+			_log.Debug("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_STATUS_EXT =-");
+			long delay = 0;
+			SendOpcode("STAT");
+			_socketCommunicator.Recv((char *)&delay, 4);
+			_log.Debug("delay in frames:", delay);
+
+			int bufferSizeMax = _snd_pcm_hw_params.intervals[SNDRV_PCM_HW_PARAM_BUFFER_SIZE - 
+				SNDRV_PCM_HW_PARAM_FIRST_INTERVAL].max;
+
+			if(bufferSizeMax < 10000)
+				bufferSizeMax = 10000;
+
+			int avail = bufferSizeMax - delay;
+
+			if(avail < 0)
+				avail = 0;
+			_snd_pcm_status.avail = avail;
+			PokeData(_ioctladdr, &_snd_pcm_status, sizeof(_snd_pcm_status));
+			regs.rax = 0;
+		}
+#endif
 		else if(_ioctlop == SNDRV_PCM_IOCTL_DELAY)
 		{
 			_log.Debug("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_DELAY =-");

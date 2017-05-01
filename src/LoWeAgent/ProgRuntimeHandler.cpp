@@ -41,10 +41,17 @@ bool ProgRuntimeHandler::SpySyscallEnter()
 			long fd = (long)regs.rdi;
 			_currentDeviceHandler = _deviceHandlerRegistry.Lookup(fd);
 		}
-		if(_syscall == SYS_mmap)
+		else if(_syscall == SYS_mmap)
 		{
 			long fd = (long)regs.r8;
 			_currentDeviceHandler = _deviceHandlerRegistry.Lookup(fd);
+		}
+		else if(_syscall == SYS_close)
+		{
+			long fd = (long)regs.rdi;
+			_log.Debug("Closing fd:", fd);
+			_currentDeviceHandler = NULL;
+			_deviceHandlerRegistry.Unregister(fd);
 		}
 	}
 

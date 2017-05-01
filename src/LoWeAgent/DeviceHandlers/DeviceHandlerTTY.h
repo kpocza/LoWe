@@ -3,6 +3,7 @@
 #include "DeviceHandler.h"
 #include <linux/vt.h>
 #include <linux/kd.h>
+#include <termios.h>
 
 class DeviceHandlerTTY : public DeviceHandler
 {
@@ -20,6 +21,7 @@ class DeviceHandlerTTY : public DeviceHandler
 
 		vt_stat _vt_stat;
 		vt_mode _vt_mode;
+		termios _termios;
 		int _kdmode;
 		int _kbmode;
 };

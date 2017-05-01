@@ -5,6 +5,8 @@
 #include "DeviceHandlerCatchAll.h"
 #include "DeviceHandlerMice.h"
 #include "DeviceHandlerKeyboard.h"
+#include "DeviceHandlerEvMice.h"
+#include "DeviceHandlerEvKeyboard.h"
 #include <string.h>
 #include <iostream>
 
@@ -71,6 +73,10 @@ DeviceHandler *DeviceHandlerFactory::CreateInternal(const string &path, const st
 		return new DeviceHandlerMice(pid, path);
 	if(id == "kbd")
 		return new DeviceHandlerKeyboard(pid, path);
+	if(id == "evmice")
+		return new DeviceHandlerEvMice(pid, path);
+	if(id == "evkbd")
+		return new DeviceHandlerEvKeyboard(pid, path);
 
 	return NULL;
 }
