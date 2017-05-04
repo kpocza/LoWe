@@ -8,18 +8,18 @@ DH=DeviceHandlers/
 
 _OBJ=loweagent.o DeviceHandler.o DeviceHandlerRegistry.o DeviceHandlerFactory.o ConfigHandler.o PidGuesser.o \
 		ProgRuntimeHandler.o ProgRuntimeDispatcher.o SocketCommunicator.o DeviceProvisioner.o \
-		ArgsParser.o CommunicatingDeviceHandler.o SigActions.o \
+		ArgsParser.o CommunicatingDeviceHandler.o SigActions.o EvdevDeviceHandler.o \
 		$(DH)DeviceHandlerCatchAll.o $(DH)DeviceHandlerFrameBuffer.o $(DH)DeviceHandlerTTY.o \
-		$(DH)DeviceHandlerALSA.o $(DH)DeviceHandlerMice.o $(DH)DeviceHandlerKeyboard.o \
+		$(DH)DeviceHandlerALSA.o \
 		$(DH)DeviceHandlerEvMice.o $(DH)DeviceHandlerEvKeyboard.o \
 		$(DH)FrameBufferTransporter.o
 OBJ=$(patsubst %,$(OBJDIR)/%,$(_OBJ))
 
 INC=DeviceHandler.h DeviceHandlerFactory.h DeviceHandlerRegistry.h ConfigHandler.h PidGuesser.h \
 		ProgRuntimeHandler.h ProgRuntimeDispatcher.h SocketCommunicator.h Log.h DeviceProvisioner.h \
-		ArgsParser.h CommunicatingDeviceHandler.h SigActions.h \
+		ArgsParser.h CommunicatingDeviceHandler.h SigActions.h EvdevDeviceHandler.h \
 		$(DH)DeviceHandlerCatchAll.h $(DH)DeviceHandlerFrameBuffer.h $(DH)DeviceHandlerTTY.h \
-		$(DH)DeviceHandlerALSA.h $(DH)DeviceHandlerMice.h $(DH)DeviceHandlerKeyboard.h \
+		$(DH)DeviceHandlerALSA.h \
 		$(DH)DeviceHandlerEvMice.h $(DH)DeviceHandlerEvKeyboard.h \
 		$(DH)FrameBufferTransporter.h
 
