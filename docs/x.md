@@ -88,5 +88,5 @@ The same effect can be achieved by additional parameterization loweagent that wi
 
 1. Two Bash windows are enough
 2. LoWeExposer has to be started in the same way as described above
-3. Starting ```sudo loweagent -e "X -o x.log"``` will start and attach to the X process
+3. Starting ```sudo loweagent -e X -o x.log``` will start and attach to the X process
 4. In the second window the ```export DISPLAY=:0``` and ```wmaker``` commands are to be executed
