@@ -54,6 +54,6 @@ The same effect can be achieved by additional parameterization of loweagent that
 
 2. LoWeExposer has to be started in the same way as described above
 
-3. Starting ```loweagent -e "mplayer my_favourite_video.mkv -o mplayer.log"``` will start and attach to the mplayer process
+3. Starting ```loweagent -e "mplayer my_favourite_video.mkv" -o mplayer.log``` will start and attach to the mplayer process
 
    ​
