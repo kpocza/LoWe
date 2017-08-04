@@ -1,6 +1,45 @@
 # Video playback via mplayer
 
-It's recommended to first employ the complex way and once you have accustomed to the theory and story behind it then choose the simplified way.
+It's recommended to try both simple and complex ways and once you have accustomed to the theory and story behind LoWe then stay at the simple way.
+
+## The simple way
+
+Please follow these steps:
+
+1. You need to start a single Bash instance that will run the agent application that will start mpalyer itself
+
+2. You have to start LoWeExposer in Windows
+
+   ![whatweneed](img/mplayer/01_whatweneedsimple.jpg "Starting needed programs")
+
+3. Starting ```loweagent -e "mplayer my_favourite_video.mkv" -o mplayer.log``` will do the following steps:
+
+   1. Detect if any devices require coordination with LoWeExposer
+   2. Check if all regular files that mimic the original /dev file exist
+   3. If not then it creates them (as root - you will be asked for user password to sudo) and checks for their existence again 
+
+   ![Creating devices](img/mplayer/02_credevs.jpg "Creating devices")
+
+   4. It will start mplayer as parameterized after the -e switch and attach to the process
+   5. The ALSA tab of LoWeExposer will show the following messages:
+
+   ![ALSA tab](img/mplayer/03_alsacheck.jpg "ALSA check")
+
+   Moreover the Framebuffer Exposer window will popup.
+
+The devices created by LoWeAgent will disappear when the WSL session ends. They have to be recreated next time.
+
+4. Mplayer is running:
+
+![Mplayer running](img/mplayer/04_mplayer.jpg "Mplayer running")
+
+and playing video and sound
+
+![Mplayer playing](img/mplayer/05_running.jpg "Mplayer playing")
+
+
+
+
 
 ## The complex way
 
@@ -9,7 +48,7 @@ Please follow these steps:
 1. You need to start two instances of Bash
    - The first one will run loweagent  (cd to the out folder of loweagent)
    - The second one will run the application
-2. You have to start LoWeExposer and click the ALSA button now if you plan to play music
+2. You have to start LoWeExposer in Windows
 
 ![whatweneed](img/mplayer/01_whatweneed.jpg "Starting needed programs")
 
@@ -46,14 +85,3 @@ It can happen that loweagent doesn't catch the mplayer process. In this case mpl
 
 ![Mplayer playing](img/mplayer/05_running.jpg "Mplayer playing")
 
-## The simplified way
-
-The same effect can be achieved by additional parameterization of loweagent that will start the application to be supervised itself. The rules and changes to the complex way are the following:
-
-1. One Bash window is enough
-
-2. LoWeExposer has to be started in the same way as described above
-
-3. Starting ```loweagent -e "mplayer my_favourite_video.mkv" -o mplayer.log``` will start and attach to the mplayer process
-
-   ​
