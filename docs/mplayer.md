@@ -37,7 +37,7 @@ and playing video and sound
 
 ![Mplayer playing](img/mplayer/05_running.jpg "Mplayer playing")
 
-
+5. Mplayer can be controlled by hitting keys in the Bash where mplayer has been started from (not in the Framebuffer Exposer window).
 
 
 
@@ -85,3 +85,4 @@ It can happen that loweagent doesn't catch the mplayer process. In this case mpl
 
 ![Mplayer playing](img/mplayer/05_running.jpg "Mplayer playing")
 
+7. Mplayer can be controlled by hitting keys in the Bash where mplayer has been started from (not in the Framebuffer Exposer window).

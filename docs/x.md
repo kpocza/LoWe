@@ -12,22 +12,22 @@ The following additional packages are to be installed:
 - xserver-xorg-input-evdev
 - unity or icewm or fvwm (or wmaker)
 
-Execute
+1. Execute
 
 ```
 sudo apt install xserver-xorg
 sudo apt install unity
 ```
 
-Copy the 9-lowe.conf from the configs folder of the local git repository to ```/usr/share/X11/xorg.conf.d/9-lowe.conf```.
+2. Copy the 9-lowe.conf from the configs folder of the local git repository to ```/usr/share/X11/xorg.conf.d/9-lowe.conf```.
+   The content of the file should look like as follows:
 
-The content of the file should look like as follows:
+   ![xorgconfig](img/x/01_config.jpg "X.Org config")
 
-![xorgconfig](img/x/01_config.jpg "X.Org config")
 
-If you are upgrading from W10 Anniversary Update please add the UseSIGIO option as seen above unless you do the copying mentioned above.
+   *If you are upgrading from W10 Anniversary Update please add the UseSIGIO option as seen above unless you do the copying mentioned above.*
 
-Install any additional packages, eg. xterm, firefox, libreoffice, etc.
+3. Install any additional packages, eg. xterm, firefox, libreoffice, etc.
 
 ## Steps to follow - Simplified way
 
@@ -57,7 +57,7 @@ Please follow these steps:
 
 5. In the second window the ```export DISPLAY=:0``` and ```unity``` commands are to be executed![run progs](img/x/06_unityrunning.jpg "Run graphical apps")
 
-
+6. Capture or release the mouse and keyboard input by holding LeftCtrl+LeftAlt and click the mouse inside the Framebuffer Exposer window. Use LeftAlt+F12 to switch the Framebuffer window to fullscreen and back.
 
 
 
@@ -113,3 +113,4 @@ Like this:
 
 ![run progs](img/x/06_unityrunning.jpg "Run graphical apps")
 
+9. Capture or release the mouse and keyboard input by holding LeftCtrl+LeftAlt and click the mouse inside the Framebuffer Exposer window. Use LeftAlt+F12 to switch the Framebuffer window to fullscreen and back.

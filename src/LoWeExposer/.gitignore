@@ -23,3 +23,5 @@ _NCrunch_*
 .*crunch*.local.xml
 *.ncrunchproject
 *.ncrunchsolution
+
+.vs
