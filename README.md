@@ -1,7 +1,7 @@
 # LoWe
 Linux on Windows extender.
 
-Ubuntu on Windows (WSL) released with Windows 10 Anniversary Update runs console based Linux apps on top of the Windows Kernel, not even all of them. The goal of this project is to extend the current functionality of Ubuntu on Windows with support for X apps, video, and sound. Reliability, UX, functionality improvements are expected in the future. **LoWe officially supports Windows 10 (Fall) Creators Update running Ubuntu 16 LTS**. *If you're still running Windows 10 Anniversary Update with Ubuntu 14 LTS then please checkout w10auu14 branch.*
+Ubuntu on Windows (WSL) released with Windows 10 Anniversary Update runs console based Linux apps on top of the Windows Kernel, not even all of them. The goal of this project is to extend the current functionality of Ubuntu on Windows with support for X apps, video, and sound. Reliability, UX, functionality improvements are expected in the future. **LoWe officially supports Windows 10 (Fall) Creators Update and April 2018 Update running Ubuntu 16 LTS**. *If you're still running Windows 10 Anniversary Update with Ubuntu 14 LTS then please checkout w10auu14 branch.*
 
 Feedback is welcome.
 
