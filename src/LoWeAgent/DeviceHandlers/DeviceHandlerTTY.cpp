@@ -50,6 +50,19 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 			_log.Info("/dev/tty0 -> /dev/tty");
 		}	
 	}
+	else if(syscall == SYS_openat)
+	{
+		_log.Info("-= Before openat =-");
+		if(_openpath == "/dev/tty0")
+		{
+			char tty[9];
+			PeekData(regs.rsi, tty, 9);
+			// /dev/tty0 -> /dev/tty
+			tty[8] = 0;
+			PokeData(regs.rsi, tty, 9);
+			_log.Info("/dev/tty0 -> /dev/tty");
+		}	
+	}
 	else if(syscall == SYS_ioctl)
 	{
 		_log.Info("-= Before ioctl  =-");

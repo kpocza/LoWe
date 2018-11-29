@@ -4,7 +4,8 @@
 
 using namespace std;
 
-DeviceHandlerRegistry::DeviceHandlerRegistry()
+DeviceHandlerRegistry::DeviceHandlerRegistry(ProgRuntimeDispatcher &progRuntimeDispatcher)
+	: _progRuntimeDispatcher(progRuntimeDispatcher)
 {
 }
 
@@ -33,5 +34,10 @@ DeviceHandler *DeviceHandlerRegistry::Lookup(const long fd)
 		return it->second;
 	}
 	return NULL;
+}
+
+void DeviceHandlerRegistry::AddProcessRelationship(const long childPid, const long pid)
+{
+	_processRelationship[childPid] = pid;
 }
 

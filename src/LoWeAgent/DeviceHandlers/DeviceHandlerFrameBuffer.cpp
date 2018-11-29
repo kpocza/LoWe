@@ -70,6 +70,36 @@ DeviceHandlerFrameBuffer::DeviceHandlerFrameBuffer(const pid_t pid, const string
 void DeviceHandlerFrameBuffer::ExecuteBefore(const long syscall, user_regs_struct &regs)
 {
 	_syscallbefore = syscall;
+	if(syscall == SYS_open)
+	{
+		_log.Info("-= Before open =-");
+		if(_openpath == "/dev/fb0")
+		{
+			char fb0[8];
+			PeekData(regs.rdi, fb0, 8);
+			// /dev/tty0 -> /dev/tty
+			fb0[1] = 't';
+			fb0[2] = 'm';
+			fb0[3] = 'p';
+			PokeData(regs.rdi, fb0, 8);
+			_log.Info("/dev/fb0 -> /tmp/fb0");
+		}	
+	}
+	if(syscall == SYS_openat)
+	{
+		_log.Info("-= Before open =-");
+		if(_openpath == "/dev/fb0")
+		{
+			char fb0[8];
+			PeekData(regs.rsi, fb0, 8);
+			// /dev/tty0 -> /dev/tty
+			fb0[1] = 't';
+			fb0[2] = 'm';
+			fb0[3] = 'p';
+			PokeData(regs.rsi, fb0, 8);
+			_log.Info("/dev/fb0 -> /tmp/fb0");
+		}	
+	}
 	if(syscall == SYS_ioctl)
 	{
 		_log.Info("-= Before ioctl =-");
@@ -134,11 +164,14 @@ void DeviceHandlerFrameBuffer::ExecuteAfter(const long syscall, user_regs_struct
 {
 	_syscallafter = syscall;
 
-	if(_syscallbefore == SYS_open)
+	if(_syscallbefore == SYS_open || _syscallbefore == SYS_openat)
 	{
 		_log.Info("-= After open =-");
 		int len = _fb_vinfo.xres * _fb_vinfo.yres * _fb_vinfo.bits_per_pixel/8;
- 		int trunres = truncate(_openpath.c_str(), len);
+		std::string realpath = _openpath;
+		realpath.replace(0, 4, "/tmp");
+		_log.Info("Trunace path:", realpath);
+		int trunres = truncate(realpath.c_str(), len);
 		_log.Info("Truncate result:", trunres);
 	}
 	else if(_syscallbefore == SYS_ioctl) 

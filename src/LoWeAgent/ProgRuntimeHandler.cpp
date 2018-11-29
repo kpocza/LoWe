@@ -34,6 +34,11 @@ bool ProgRuntimeHandler::SpySyscallEnter()
 		ReadRemoteText(regs.rdi, _openpath, sizeof(_openpath));
 		_currentDeviceHandler = _deviceHandlerFactory.Create(_openpath, _pid);
 	}
+	else if(_syscall == SYS_openat)
+	{
+		ReadRemoteText(regs.rsi, _openpath, sizeof(_openpath));
+		_currentDeviceHandler = _deviceHandlerFactory.Create(_openpath, _pid);
+	}
 	else 
 	{
 		if(_syscall == SYS_ioctl || _syscall == SYS_read || _syscall == SYS_write)
@@ -45,6 +50,13 @@ bool ProgRuntimeHandler::SpySyscallEnter()
 		{
 			long fd = (long)regs.r8;
 			_currentDeviceHandler = _deviceHandlerRegistry.Lookup(fd);
+		}
+		else if(_syscall == SYS_epoll_ctl)
+		{
+			long fd = (long)regs.rdx;
+			_log.Debug("epoll", fd);
+			_currentDeviceHandler = _deviceHandlerRegistry.Lookup(fd);
+			_log.Debug("epoll", _currentDeviceHandler);
 		}
 		else if(_syscall == SYS_close)
 		{
@@ -71,7 +83,13 @@ bool ProgRuntimeHandler::SpySyscallExit()
 
 	int syscall = ptrace(PTRACE_PEEKUSER, _pid, sizeof(long)*ORIG_RAX);
 
-	if(syscall == SYS_open) 
+	if(syscall == SYS_clone)
+	{
+		ptrace(PTRACE_GETREGS, _pid, NULL, &regs);
+		_deviceHandlerRegistry.AddProcessRelationship(regs.rax, _pid);
+	}
+
+	if(syscall == SYS_open || syscall == SYS_openat) 
 	{
 		ptrace(PTRACE_GETREGS, _pid, NULL, &regs);
 		long fd = (long)regs.rax;

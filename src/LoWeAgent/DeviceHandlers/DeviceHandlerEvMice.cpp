@@ -53,7 +53,6 @@ void DeviceHandlerEvMice::PreEnabling()
 void DeviceHandlerEvMice::ReadLogic(user_regs_struct &regs)
 {
 	int size = 0;
-
 	if(_isEnabled)
 	{
 		long now = GetTimeMillisec();

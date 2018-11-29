@@ -1,6 +1,7 @@
 #include <sys/ptrace.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
+#include <sys/epoll.h>
 #include "EvdevDeviceHandler.h"
 #include <iostream>
 #include <unistd.h>
@@ -165,6 +166,14 @@ void EvdevDeviceHandler::ExecuteBefore(const long syscall, user_regs_struct &reg
 		regs.orig_rax = -1;
 		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
 	}
+	else if(syscall == SYS_epoll_ctl)
+	{
+		_log.Debug("-= Before epoll ctl =-");
+		if(regs.rsi == EPOLL_CTL_ADD)
+		{
+			_log.Debug("-= add =-");
+		}
+	}
 	else if(syscall!= SYS_open)
 	{
 		_log.Info("Other syscall:", syscall);
@@ -175,9 +184,6 @@ void EvdevDeviceHandler::ExecuteAfter(const long syscall, user_regs_struct &regs
 {
 	_syscallafter = syscall;
 
-	if(_syscallbefore == SYS_open)
-	{
-	}
 	if(_syscallbefore == SYS_ioctl) 
 	{
 		_log.Info("-= After ioctl =-");
