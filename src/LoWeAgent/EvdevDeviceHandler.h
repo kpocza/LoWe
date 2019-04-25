@@ -14,8 +14,8 @@ class EvdevDeviceHandler : public CommunicatingDeviceHandler
 		EvdevDeviceHandler(const pid_t pid, const string path, const string logName, const string exposerId);
 
 		virtual string GetFixupScript() const override;
-		virtual void ExecuteBefore(const long syscall, user_regs_struct &regs) override;
-		virtual void ExecuteAfter(const long syscall, user_regs_struct &regs) override;
+		virtual void ExecuteBefore(pid_t pid, const long syscall, user_regs_struct &regs) override;
+		virtual void ExecuteAfter(pid_t pid, const long syscall, user_regs_struct &regs) override;
 
 	protected:
 		virtual long GetEv() const=0;
@@ -24,7 +24,9 @@ class EvdevDeviceHandler : public CommunicatingDeviceHandler
 		virtual void SetKeyBits()=0;
 		virtual string GetName() const=0;
 		virtual void PreEnabling()=0;
-		virtual void ReadLogic(user_regs_struct &regs)=0;
+		virtual void ReadLogic(pid_t pid, user_regs_struct &regs)=0;
+
+		virtual dev_t GetDevNum() = 0;
 
 	protected:
 		bool _isEnabled;
@@ -34,6 +36,7 @@ class EvdevDeviceHandler : public CommunicatingDeviceHandler
 		long _writelen;
 		long _readaddr;
 		long _readlen;
+		long _stataddr;
 
 		struct input_event _events[100];
 	

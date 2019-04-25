@@ -94,6 +94,8 @@ const ConfigSettings ConfigHandler::LoadConfig()
 		while(ss >> tmp)
 			dev.devices.push_back(tmp);
 		
+        log.Debug("Registered device with name: ", dev.name);
+
 		configSettings.devices.push_back(dev);
 	}
 

@@ -4,17 +4,16 @@
 
 using namespace std;
 
-DeviceHandlerRegistry::DeviceHandlerRegistry(ProgRuntimeDispatcher &progRuntimeDispatcher)
-	: _progRuntimeDispatcher(progRuntimeDispatcher)
+DeviceHandlerRegistry::DeviceHandlerRegistry()
 {
 }
 
-void DeviceHandlerRegistry::Register(const long fd, DeviceHandler *deviceHandler)
+void DeviceHandlerRegistry::Register(const long fd, std::shared_ptr<DeviceHandler> deviceHandler)
 {
 	Unregister(fd);	
 
 	deviceHandler->SetFd(fd);
-	_deviceHandlers.insert(pair<long, DeviceHandler*>(fd, deviceHandler));
+	_deviceHandlers.emplace(fd, deviceHandler);
 }
 
 void DeviceHandlerRegistry::Unregister(const long fd)
@@ -25,9 +24,9 @@ void DeviceHandlerRegistry::Unregister(const long fd)
 	}
 }
 
-DeviceHandler *DeviceHandlerRegistry::Lookup(const long fd)
+std::shared_ptr<DeviceHandler> DeviceHandlerRegistry::Lookup(const long fd)
 {
-	map<long, DeviceHandler*>::iterator it = _deviceHandlers.find(fd);
+	auto it = _deviceHandlers.find(fd);
 
 	if(it!= _deviceHandlers.end())
 	{
@@ -39,5 +38,17 @@ DeviceHandler *DeviceHandlerRegistry::Lookup(const long fd)
 void DeviceHandlerRegistry::AddProcessRelationship(const long childPid, const long pid)
 {
 	_processRelationship[childPid] = pid;
+}
+
+bool DeviceHandlerRegistry::OneTimeDuplicateHandles(const std::shared_ptr<ProgRuntimeHandler>& runtimeHandler)
+{
+	return runtimeHandler->AcceptHandlesFromOtherProcess(_deviceHandlers);
+}
+
+bool DeviceHandlerRegistry::RegisterMap(const HandleMap& deviceHandlers)
+{
+	_deviceHandlers.insert(deviceHandlers.begin(), deviceHandlers.end());
+
+	return true;
 }
 

@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 DeviceHandler::DeviceHandler(const int pid, const string openpath, const string logName, const string exposerId): 
-	_openpath(openpath), _pid(pid), _log(Log(logName, pid)), _exposerId(exposerId) 
+	_openpath(openpath), _log(Log(logName, pid)), _exposerId(exposerId) 
 {
 	_syscallbefore = SYS_open;
 	_fd = -1;
@@ -17,6 +17,7 @@ DeviceHandler::DeviceHandler(const int pid, const string openpath, const string 
 
 DeviceHandler::~DeviceHandler()
 {
+	_log.Debug("Fully closing fd:", _fd);
 }
 
 void DeviceHandler::SetFd(const long fd)
@@ -25,7 +26,7 @@ void DeviceHandler::SetFd(const long fd)
 	_log.SetFd(fd);
 }
 
-void DeviceHandler::PokeData(long addr, void *dataInput, int len) const 
+void DeviceHandler::PokeData(pid_t pid, long addr, const void *dataInput, int len) const 
 {
 //	Why does the following code show errno 14 - EFAULT?
 /*	struct iovec local, remote;
@@ -43,21 +44,21 @@ void DeviceHandler::PokeData(long addr, void *dataInput, int len) const
 
 	for(int i = 0;i < fullChunksEnd;i+=chunkSize) 
 	{
-		ptrace(PTRACE_POKEDATA, _pid, addr + i, *(long *)&data[i]);
+		ptrace(PTRACE_POKEDATA, pid, addr + i, *(long *)&data[i]);
 	}
 
 	if(restLen > 0)
 	{
 		char lastChunk[chunkSize];
-		long lastData = ptrace(PTRACE_PEEKDATA, _pid, addr + fullChunksEnd, 0);
+		long lastData = ptrace(PTRACE_PEEKDATA, pid, addr + fullChunksEnd, 0);
 		*(long *)(&lastChunk) = lastData;
 		for(int i = 0;i < restLen;i++)
 			lastChunk[i] = data[fullChunksEnd + i];
-		ptrace(PTRACE_POKEDATA, _pid, addr + fullChunksEnd, *(long *)(char *)&lastChunk);
+		ptrace(PTRACE_POKEDATA, pid, addr + fullChunksEnd, *(long *)(char *)&lastChunk);
 	}
 }
 
-void DeviceHandler::PeekData(long addr, void *dataOutput, int len) const {
+void DeviceHandler::PeekData(pid_t pid, long addr, void *dataOutput, int len) const {
 	struct iovec local, remote;
 
 	local.iov_base = dataOutput;
@@ -65,7 +66,7 @@ void DeviceHandler::PeekData(long addr, void *dataOutput, int len) const {
 	remote.iov_base = (void *)addr;
 	remote.iov_len = len;
 
-	process_vm_readv(_pid, &local, 1, &remote, 1, 0);
+	process_vm_readv(pid, &local, 1, &remote, 1, 0);
 }
 
 bool DeviceHandler::IsDeviceAvailable()

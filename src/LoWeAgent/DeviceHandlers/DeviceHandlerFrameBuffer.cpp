@@ -67,7 +67,7 @@ DeviceHandlerFrameBuffer::DeviceHandlerFrameBuffer(const pid_t pid, const string
 	_log.Info("Path:", _openpath);
 }
 
-void DeviceHandlerFrameBuffer::ExecuteBefore(const long syscall, user_regs_struct &regs)
+void DeviceHandlerFrameBuffer::ExecuteBefore(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	_syscallbefore = syscall;
 	if(syscall == SYS_open)
@@ -76,12 +76,12 @@ void DeviceHandlerFrameBuffer::ExecuteBefore(const long syscall, user_regs_struc
 		if(_openpath == "/dev/fb0")
 		{
 			char fb0[8];
-			PeekData(regs.rdi, fb0, 8);
+			PeekData(pid, regs.rdi, fb0, 8);
 			// /dev/tty0 -> /dev/tty
 			fb0[1] = 't';
 			fb0[2] = 'm';
 			fb0[3] = 'p';
-			PokeData(regs.rdi, fb0, 8);
+			PokeData(pid, regs.rdi, fb0, 8);
 			_log.Info("/dev/fb0 -> /tmp/fb0");
 		}	
 	}
@@ -91,12 +91,12 @@ void DeviceHandlerFrameBuffer::ExecuteBefore(const long syscall, user_regs_struc
 		if(_openpath == "/dev/fb0")
 		{
 			char fb0[8];
-			PeekData(regs.rsi, fb0, 8);
+			PeekData(pid, regs.rsi, fb0, 8);
 			// /dev/tty0 -> /dev/tty
 			fb0[1] = 't';
 			fb0[2] = 'm';
 			fb0[3] = 'p';
-			PokeData(regs.rsi, fb0, 8);
+			PokeData(pid, regs.rsi, fb0, 8);
 			_log.Info("/dev/fb0 -> /tmp/fb0");
 		}	
 	}
@@ -143,7 +143,7 @@ void DeviceHandlerFrameBuffer::ExecuteBefore(const long syscall, user_regs_struc
 			_log.Error("unknown ioctl op ", _ioctlop);
 		}
 		regs.orig_rax = -1;
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	}
 	else if(syscall == SYS_mmap)
 	{
@@ -160,7 +160,7 @@ void DeviceHandlerFrameBuffer::ExecuteBefore(const long syscall, user_regs_struc
 	}
 }
 
-void DeviceHandlerFrameBuffer::ExecuteAfter(const long syscall, user_regs_struct &regs)
+void DeviceHandlerFrameBuffer::ExecuteAfter(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	_syscallafter = syscall;
 
@@ -180,17 +180,17 @@ void DeviceHandlerFrameBuffer::ExecuteAfter(const long syscall, user_regs_struct
 		if(_ioctlop == FBIOGET_FSCREENINFO) {
 			_log.Info("FBIOGET_FSCREENINFO");
 			regs.rax = 0;
-			PokeData(_ioctladdr, &_fb_finfo, sizeof(_fb_finfo));
+			PokeData(pid, _ioctladdr, &_fb_finfo, sizeof(_fb_finfo));
 		}
 		if(_ioctlop == FBIOGET_VSCREENINFO) {
 			_log.Info("FBIOGET_VSCREENINFO");
 			regs.rax = 0;
-			PokeData(_ioctladdr, &_fb_vinfo, sizeof(_fb_vinfo));
+			PokeData(pid, _ioctladdr, &_fb_vinfo, sizeof(_fb_vinfo));
 		}
 		if(_ioctlop == FBIOPUT_VSCREENINFO) {
 			_log.Info("FBIOPUT_VSCREENINFO");
 			regs.rax = 0;
-			PeekData(_ioctladdr, &_fb_vinfonew, sizeof(_fb_vinfo));
+			PeekData(pid, _ioctladdr, &_fb_vinfonew, sizeof(_fb_vinfo));
 			_log.Info("xres:", _fb_vinfonew.xres, "yres:", _fb_vinfonew.yres,
 				"xresv:", _fb_vinfonew.xres_virtual, "yresv:", _fb_vinfonew.yres_virtual,
 				"bpp:", _fb_vinfonew.bits_per_pixel,
@@ -211,13 +211,13 @@ void DeviceHandlerFrameBuffer::ExecuteAfter(const long syscall, user_regs_struct
 		if(_ioctlop == FBIOGET_CON2FBMAP) {
 			_log.Info("FBIOGET_CON2FBMAP");
 			regs.rax = 0;
-			PokeData(_ioctladdr, (char *)&_fb_con2fbmap, sizeof(_fb_con2fbmap));
+			PokeData(pid, _ioctladdr, (char *)&_fb_con2fbmap, sizeof(_fb_con2fbmap));
 		}
 		if(_ioctlop == FBIOPUT_CON2FBMAP) {
 			_log.Info("FBIOPUT_CON2FBMAP");
 			regs.rax = 0;
 		}
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	}
 	else if(_syscallbefore == SYS_mmap)
 	{
@@ -232,13 +232,13 @@ void DeviceHandlerFrameBuffer::ExecuteAfter(const long syscall, user_regs_struct
 			params[2] = _fb_vinfo.bits_per_pixel;
 			_socketCommunicator.Send((char *)params, sizeof(params));
 			long address = regs.rax;
-			_frameBufferTransporter->StartThreads(_pid, _fb_finfo.mmio_len, address, &_socketCommunicator);
+			_frameBufferTransporter->StartThreads(pid, _fb_finfo.mmio_len, address, &_socketCommunicator);
 		}
 		else 
 		{
 			_log.Error("socket open failed");
 			regs.rax = -1;
-			ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+			ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 		}
 	}
 

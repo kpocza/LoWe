@@ -42,7 +42,7 @@ void DeviceHandlerEvKeyboard::PreEnabling()
 	_log.Info("Enable keyboard");
 }
 
-void DeviceHandlerEvKeyboard::ReadLogic(user_regs_struct &regs)
+void DeviceHandlerEvKeyboard::ReadLogic(pid_t pid, user_regs_struct &regs)
 {
 	int size = 0;
 	if(_isEnabled)
@@ -84,7 +84,7 @@ void DeviceHandlerEvKeyboard::ReadLogic(user_regs_struct &regs)
 				_events[cnt].value = 0;
 
 				size = sizeof(_events[0]) * (cnt+1);
-				PokeData(_readaddr, &_events, size);
+				PokeData(pid, _readaddr, &_events, size);
 			}
 		}
 		else
@@ -98,12 +98,12 @@ void DeviceHandlerEvKeyboard::ReadLogic(user_regs_struct &regs)
 		{
 			char data[size];
 			memset(data, 0, size);
-			PokeData(_readaddr, data, size);
+			PokeData(pid, _readaddr, data, size);
 		}
 	}
 	regs.rax = size;
-	ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+	ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 
-	_log.Debug("Read size:", size);
+	//_log.Debug("Read size:", size);
 }
 

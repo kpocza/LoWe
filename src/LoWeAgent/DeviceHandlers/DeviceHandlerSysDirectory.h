@@ -2,10 +2,12 @@
 
 #include "DeviceHandler.h"
 
-class DeviceHandlerCatchAll : public DeviceHandler
+#include <unordered_map>
+
+class DeviceHandlerSysDirectory : public DeviceHandler
 {
 	public:
-		DeviceHandlerCatchAll(const pid_t pid, const string path);
+		DeviceHandlerSysDirectory(const pid_t pid, const string path);
 
 		virtual bool IsDeviceAvailable() override;
 		virtual string GetFixupScript() const override;
@@ -15,5 +17,8 @@ class DeviceHandlerCatchAll : public DeviceHandler
 	private:
 		long _ioctlop;
 		long _ioctladdr;
+		long _stataddr;
+
+		unordered_map<string, string> directoryMap;
 
 };

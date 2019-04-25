@@ -8,6 +8,7 @@
 #include "SigActions.h"
 #include <iostream>
 #include <algorithm>
+#include <memory>
 
 LogLevel Log::_logLevel = LogLevel::Info;
 ostream *Log::_logout = &cout;
@@ -138,15 +139,15 @@ int main(int argc, char **args)
 
 	log.Info("PID:", pid);
 
-	ProgRuntimeDispatcher runtimeDispatcher(deviceHandlerFactory);
-	if(!runtimeDispatcher.Init(pid, isExec))
+	auto runtimeDispatcher = std::make_shared<ProgRuntimeDispatcher>(deviceHandlerFactory);
+	if(!runtimeDispatcher->Init(pid, isExec))
 	{
 		log.Error("Error initializing main loop");
 		return 1;
 	}
 
 	log.Info("Spinning...");
-	runtimeDispatcher.Spin();
+	runtimeDispatcher->Spin();
 	return 0;
 }
 

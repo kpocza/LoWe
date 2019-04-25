@@ -10,14 +10,14 @@ class DeviceHandlerALSA : public CommunicatingDeviceHandler
 		DeviceHandlerALSA(const pid_t pid, const string path);
 
 		virtual string GetFixupScript() const override;
-		virtual void ExecuteBefore(const long syscall, user_regs_struct &regs) override;
-		virtual void ExecuteAfter(const long syscall, user_regs_struct &regs) override;
+		virtual void ExecuteBefore(pid_t pid, const long syscall, user_regs_struct &regs) override;
+		virtual void ExecuteAfter(pid_t pid, const long syscall, user_regs_struct &regs) override;
 
 	private:
-		void ExecuteBeforeControl(const long syscall, user_regs_struct &regs);
-		void ExecuteAfterControl(const long syscall, user_regs_struct &regs);
-		void ExecuteBeforePCM(const long syscall, user_regs_struct &regs);
-		void ExecuteAfterPCM(const long syscall, user_regs_struct &regs);
+		void ExecuteBeforeControl(pid_t pid, const long syscall, user_regs_struct &regs);
+		void ExecuteAfterControl(pid_t pid, const long syscall, user_regs_struct &regs);
+		void ExecuteBeforePCM(pid_t pid, const long syscall, user_regs_struct &regs);
+		void ExecuteAfterPCM(pid_t pid, const long syscall, user_regs_struct &regs);
 
 		enum ALSADevType {
 			Undefined = 0,

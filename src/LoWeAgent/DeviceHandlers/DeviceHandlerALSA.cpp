@@ -57,36 +57,36 @@ string DeviceHandlerALSA::GetFixupScript() const
 	return "";
 }
 
-void DeviceHandlerALSA::ExecuteBefore(const long syscall, user_regs_struct &regs)
+void DeviceHandlerALSA::ExecuteBefore(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	_syscallbefore = syscall;
 
 	if(_devType == Control) 
 	{
-		ExecuteBeforeControl(syscall, regs);
+		ExecuteBeforeControl(pid, syscall, regs);
 	}
 	else if(_devType == PCM)
 	{
-		ExecuteBeforePCM(syscall, regs);
+		ExecuteBeforePCM(pid, syscall, regs);
 	}
 
 }
 
-void DeviceHandlerALSA::ExecuteAfter(const long syscall, user_regs_struct &regs)
+void DeviceHandlerALSA::ExecuteAfter(pid_t pid,const long syscall, user_regs_struct &regs)
 {
 	_syscallafter = syscall;
 
 	if(_devType == Control) 
 	{
-		ExecuteAfterControl(syscall, regs);
+		ExecuteAfterControl(pid, syscall, regs);
 	}
 	else if(_devType == PCM) 
 	{
-		ExecuteAfterPCM(syscall, regs);
+		ExecuteAfterPCM(pid, syscall, regs);
 	}
 }
 
-void DeviceHandlerALSA::ExecuteBeforeControl(const long syscall, user_regs_struct &regs)
+void DeviceHandlerALSA::ExecuteBeforeControl(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	if(syscall == SYS_ioctl)
 	{
@@ -111,7 +111,7 @@ void DeviceHandlerALSA::ExecuteBeforeControl(const long syscall, user_regs_struc
 			_log.Error("-= Before Control Device ioctl - unknown ioctl op =-", _ioctlop);
 		}
 		regs.orig_rax = -1;
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	}
 	else
 	{
@@ -119,21 +119,21 @@ void DeviceHandlerALSA::ExecuteBeforeControl(const long syscall, user_regs_struc
 	} 
 }
 
-void DeviceHandlerALSA::ExecuteAfterControl(const long syscall, user_regs_struct &regs)
+void DeviceHandlerALSA::ExecuteAfterControl(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	if(_syscallbefore == SYS_ioctl) 
 	{
 		if(_ioctlop == SNDRV_CTL_IOCTL_CARD_INFO)
 		{
 			_log.Info("-= After Control Device ioctl - SNDRV_CTL_IOCTL_CARD_INFO =-");
-			PokeData(_ioctladdr, &_card_info, sizeof(_card_info));
+			PokeData(pid, _ioctladdr, &_card_info, sizeof(_card_info));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_CTL_IOCTL_PVERSION)
 		{
 			_log.Info("-= After Control Device ioctl - SNDRV_CTL_IOCTL_PVERSION =-");
 			int ver = SNDRV_CTL_VERSION;
-			PokeData(_ioctladdr, &ver, sizeof(ver));
+			PokeData(pid, _ioctladdr, &ver, sizeof(ver));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_CTL_IOCTL_PCM_PREFER_SUBDEVICE)
@@ -141,7 +141,7 @@ void DeviceHandlerALSA::ExecuteAfterControl(const long syscall, user_regs_struct
 			_log.Info("-= After Control Device ioctl - SNDRV_CTL_IOCTL_PCM_PREFER_SUBDEVICE =-");
 			regs.rax = 0;
 		}
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	}
 	else
 	{
@@ -151,7 +151,7 @@ void DeviceHandlerALSA::ExecuteAfterControl(const long syscall, user_regs_struct
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 }
 
-void DeviceHandlerALSA::ExecuteBeforePCM(const long syscall, user_regs_struct &regs)
+void DeviceHandlerALSA::ExecuteBeforePCM(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	if(syscall == SYS_ioctl)
 	{
@@ -230,7 +230,7 @@ void DeviceHandlerALSA::ExecuteBeforePCM(const long syscall, user_regs_struct &r
 			_log.Error("unknown ioctl op ", _ioctlop);
 		}
 		regs.orig_rax = -1;
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	}
 	else if(syscall == SYS_mmap)
 	{
@@ -238,7 +238,7 @@ void DeviceHandlerALSA::ExecuteBeforePCM(const long syscall, user_regs_struct &r
 		_log.Debug("regs. rdi:", regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx,
 			"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 		regs.orig_rax = -1;
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	}
 	else
 	{
@@ -246,14 +246,14 @@ void DeviceHandlerALSA::ExecuteBeforePCM(const long syscall, user_regs_struct &r
 	} 
 }
 
-void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &regs)
+void DeviceHandlerALSA::ExecuteAfterPCM(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	if(_syscallbefore == SYS_ioctl) 
 	{
 		if(_ioctlop == SNDRV_PCM_IOCTL_INFO)
 		{
 			_log.Info("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_INFO =-");
-			PokeData(_ioctladdr, &_pcm_info, sizeof(_pcm_info));
+			PokeData(pid, _ioctladdr, &_pcm_info, sizeof(_pcm_info));
 
 			if(_socketCommunicator.Open("127.0.0.1", GetPort()))
 			{
@@ -271,33 +271,33 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		{
 			_log.Info("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_PVERSION =-");
 			int ver = SNDRV_PCM_VERSION;
-			PokeData(_ioctladdr, &ver, sizeof(ver));
+			PokeData(pid,_ioctladdr, &ver, sizeof(ver));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_TTSTAMP)
 		{
 			_log.Info("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_TTSTAMP =-");
 			int ttstamp = 0;
-			PeekData(_ioctladdr, &ttstamp, sizeof(ttstamp));
+			PeekData(pid, _ioctladdr, &ttstamp, sizeof(ttstamp));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_SYNC_PTR)
 		{
 			_log.Debug("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_SYNC_PTR =-");
-			PeekData(_ioctladdr, &_pcm_sync_ptr, sizeof(_pcm_sync_ptr));
+			PeekData(pid, _ioctladdr, &_pcm_sync_ptr, sizeof(_pcm_sync_ptr));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_HW_REFINE)
 		{
 			_log.Info("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_HW_REFINE =-");
-			PeekData(_ioctladdr, &_snd_pcm_hw_params, sizeof(_snd_pcm_hw_params));
+			PeekData(pid, _ioctladdr, &_snd_pcm_hw_params, sizeof(_snd_pcm_hw_params));
 			
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_HW_PARAMS)
 		{
 			_log.Info("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_HW_PARAMS =-");
-			PeekData(_ioctladdr, &_snd_pcm_hw_params, sizeof(_snd_pcm_hw_params));
+			PeekData(pid, _ioctladdr, &_snd_pcm_hw_params, sizeof(_snd_pcm_hw_params));
 			
 			int format = _snd_pcm_hw_params.masks[SNDRV_PCM_HW_PARAM_FORMAT - 
 				SNDRV_PCM_HW_PARAM_FIRST_MASK].bits[0];
@@ -368,7 +368,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			if(avail < 0)
 				avail = 0;
 			_snd_pcm_status.avail = avail;
-			PokeData(_ioctladdr, &_snd_pcm_status, sizeof(_snd_pcm_status));
+			PokeData(pid,_ioctladdr, &_snd_pcm_status, sizeof(_snd_pcm_status));
 			regs.rax = 0;
 		}
 #ifdef SNDRV_PCM_IOCTL_STATUS_EXT 
@@ -391,7 +391,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			if(avail < 0)
 				avail = 0;
 			_snd_pcm_status.avail = avail;
-			PokeData(_ioctladdr, &_snd_pcm_status, sizeof(_snd_pcm_status));
+			PokeData(pid, _ioctladdr, &_snd_pcm_status, sizeof(_snd_pcm_status));
 			regs.rax = 0;
 		}
 #endif
@@ -402,7 +402,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			SendOpcode("DELA");
 			_socketCommunicator.Recv((char *)&delay, 4);
 			_log.Debug("delay in frames:", delay);
-			PokeData(_ioctladdr, &delay, sizeof(delay));
+			PokeData(pid, _ioctladdr, &delay, sizeof(delay));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_DROP)
@@ -421,14 +421,14 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 		{
 			_log.Debug("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_WRITEI_FRAMES =-");
 			snd_xferi xferi;
-			PeekData(_ioctladdr, &xferi, sizeof(xferi));
+			PeekData(pid, _ioctladdr, &xferi, sizeof(xferi));
 			
 			int framebytes = _snd_pcm_hw_params.intervals[SNDRV_PCM_HW_PARAM_FRAME_BITS - 
 				SNDRV_PCM_HW_PARAM_FIRST_INTERVAL].max/8;
 			
 			unsigned int bytes = xferi.frames * framebytes;
 			char *buf = (char *)malloc(bytes);
-			PeekData((unsigned long)xferi.buf, buf, bytes);
+			PeekData(pid, (unsigned long)xferi.buf, buf, bytes);
 
 			SendOpcode("PLAY");
 			_socketCommunicator.Send((char *)&bytes, 4);
@@ -437,7 +437,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			_log.Debug("Bytes:", bytes);
 
 			xferi.result = xferi.frames;
-			PokeData(_ioctladdr, &xferi, sizeof(xferi));
+			PokeData(pid, _ioctladdr, &xferi, sizeof(xferi));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_PAUSE)
@@ -454,12 +454,12 @@ void DeviceHandlerALSA::ExecuteAfterPCM(const long syscall, user_regs_struct &re
 			_snd_pcm_status.state = SNDRV_PCM_STATE_RUNNING;
 			regs.rax = 0;
 		}
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	}
 	else if(_syscallbefore == SYS_mmap)
 	{
 		regs.rax = 0;
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	}
 	_log.Debug("regs. rax:", regs.rax, "rdi:", regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx,
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);

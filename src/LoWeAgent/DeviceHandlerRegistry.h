@@ -2,22 +2,28 @@
 
 #include "DeviceHandler.h"
 #include "ProgRuntimeDispatcher.h"
-#include <map>
+#include <unordered_map>
+
+#include <memory>
 
 using namespace std;
+
+class ProgRuntimeHandler;
 
 class DeviceHandlerRegistry
 {
 	public:
-		DeviceHandlerRegistry(ProgRuntimeDispatcher &progRuntimeDispatcher);
+		DeviceHandlerRegistry();
 
-		void Register(const long fd, DeviceHandler *deviceHandler);
+		void Register(const long fd, std::shared_ptr<DeviceHandler> deviceHandler);
+		bool RegisterMap(const HandleMap& deviceHandlers);
 		void Unregister(const long fd);
-		DeviceHandler *Lookup(const long fd);
+		std::shared_ptr<DeviceHandler> Lookup(const long fd);
 		void AddProcessRelationship(const long childPid, const long pid);
 
+		bool OneTimeDuplicateHandles(const std::shared_ptr<ProgRuntimeHandler>& runtimeHandler);
+
 	private:
-		map<long, DeviceHandler*> _deviceHandlers;
-		map<long, long> _processRelationship;
-		ProgRuntimeDispatcher &_progRuntimeDispatcher;
+		HandleMap _deviceHandlers;
+		unordered_map<long, long> _processRelationship;
 };

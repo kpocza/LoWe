@@ -21,7 +21,7 @@ string DeviceHandlerCatchAll::GetFixupScript() const
 	return "";
 }
 
-void DeviceHandlerCatchAll::ExecuteBefore(const long syscall, user_regs_struct &regs)
+void DeviceHandlerCatchAll::ExecuteBefore(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	_syscallbefore = syscall;
 	_log.Info("Syscall:", syscall);
@@ -29,7 +29,7 @@ void DeviceHandlerCatchAll::ExecuteBefore(const long syscall, user_regs_struct &
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 }
 
-void DeviceHandlerCatchAll::ExecuteAfter(const long syscall, user_regs_struct &regs)
+void DeviceHandlerCatchAll::ExecuteAfter(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	_syscallafter = syscall;
 

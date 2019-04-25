@@ -33,7 +33,7 @@ string DeviceHandlerTTY::GetFixupScript() const
 	return "";
 }
 
-void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
+void DeviceHandlerTTY::ExecuteBefore(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	_syscallbefore = syscall;
 
@@ -43,10 +43,10 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 		if(_openpath == "/dev/tty0")
 		{
 			char tty[9];
-			PeekData(regs.rdi, tty, 9);
+			PeekData(pid, regs.rdi, tty, 9);
 			// /dev/tty0 -> /dev/tty
 			tty[8] = 0;
-			PokeData(regs.rdi, tty, 9);
+			PokeData(pid, regs.rdi, tty, 9);
 			_log.Info("/dev/tty0 -> /dev/tty");
 		}	
 	}
@@ -56,10 +56,10 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 		if(_openpath == "/dev/tty0")
 		{
 			char tty[9];
-			PeekData(regs.rsi, tty, 9);
+			PeekData(pid, regs.rsi, tty, 9);
 			// /dev/tty0 -> /dev/tty
 			tty[8] = 0;
-			PokeData(regs.rsi, tty, 9);
+			PokeData(pid, regs.rsi, tty, 9);
 			_log.Info("/dev/tty0 -> /dev/tty");
 		}	
 	}
@@ -139,7 +139,7 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 		{
 			_log.Info("Unknown ioctl:", _ioctlop);
 		}
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	} 
 	else
 	{
@@ -149,7 +149,7 @@ void DeviceHandlerTTY::ExecuteBefore(const long syscall, user_regs_struct &regs)
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);
 }
 
-void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
+void DeviceHandlerTTY::ExecuteAfter(pid_t pid, const long syscall, user_regs_struct &regs)
 {
 	_syscallafter = syscall;
 
@@ -159,7 +159,7 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		if(_ioctlop == VT_GETSTATE)
 		{
 			_log.Info("VT_GETSTATE");
-			PokeData(_ioctladdr, &_vt_stat, sizeof(_vt_stat));
+			PokeData(pid, _ioctladdr, &_vt_stat, sizeof(_vt_stat));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == VT_OPENQRY)
@@ -167,7 +167,7 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 			_log.Info("VT_OPENQRY");
 			int data;
 			data=99;
-			PokeData(_ioctladdr, &data, 4);
+			PokeData(pid, _ioctladdr, &data, 4);
 
 			regs.rax = 0;
 		}
@@ -189,31 +189,31 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		else if(_ioctlop == VT_GETMODE)
 		{
 			_log.Info("VT_GETMODE");
-			PokeData(_ioctladdr, &_vt_mode, sizeof(_vt_mode));
+			PokeData(pid, _ioctladdr, &_vt_mode, sizeof(_vt_mode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == VT_SETMODE)
 		{
 			_log.Info("VT_SETMODE");
-			PeekData(_ioctladdr, &_vt_mode, sizeof(_vt_mode));
+			PeekData(pid, _ioctladdr, &_vt_mode, sizeof(_vt_mode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == KDSETMODE)
 		{
 			_log.Info("KDSETMODE");
-			PeekData(_ioctladdr, &_kdmode, sizeof(_kdmode));
+			PeekData(pid, _ioctladdr, &_kdmode, sizeof(_kdmode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == KDGETMODE)
 		{
 			_log.Info("KDGETMODE");
-			PokeData(_ioctladdr, &_kdmode, sizeof(_kdmode));
+			PokeData(pid, _ioctladdr, &_kdmode, sizeof(_kdmode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == KDSKBMODE)
 		{
 			_log.Info("KDSKBMODE");
-			PeekData(_ioctladdr, &_kbmode, sizeof(_kbmode));
+			PeekData(pid, _ioctladdr, &_kbmode, sizeof(_kbmode));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == TIOCLINUX)
@@ -224,16 +224,16 @@ void DeviceHandlerTTY::ExecuteAfter(const long syscall, user_regs_struct &regs)
 		else if(_ioctlop == TCGETS)
 		{
 			_log.Info("TCGETS");
-//			PokeData(_ioctladdr, &_termios, sizeof(_termios));
+//			PokeData(pid, _ioctladdr, &_termios, sizeof(_termios));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == TCSETS)
 		{
 			_log.Info("TCSETS");
-//			PeekData(_ioctladdr, &_termios, sizeof(_termios));
+//			PeekData(pid, _ioctladdr, &_termios, sizeof(_termios));
 			regs.rax = 0;
 		}
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
 	}
 	_log.Debug("regs. rax:", regs.rax, "rdi:", regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx,
 		"r10:", regs.r10, "r8: ", regs.r8, "r9:", regs.r9);

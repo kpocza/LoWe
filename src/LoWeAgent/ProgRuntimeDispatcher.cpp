@@ -39,15 +39,28 @@ bool ProgRuntimeDispatcher::Spin()
 	return true;
 }
 
-ProgRuntimeHandler *ProgRuntimeDispatcher::GetOrAdd(pid_t pid, int status)
+bool ProgRuntimeDispatcher::CloneHandlesToPid(pid_t destPid, std::shared_ptr<DeviceHandlerRegistry> registry)
 {
-	map<pid_t, ProgRuntimeHandler*>::iterator item = _runtimeInfo.find(pid);
+	auto item = _runtimeInfo.find(destPid);
+	if(item == _runtimeInfo.end()) {
+		return false;
+	}
 
-	if(item!= _runtimeInfo.end())
+	return registry->OneTimeDuplicateHandles(item->second);
+}
+
+std::shared_ptr<ProgRuntimeHandler> ProgRuntimeDispatcher::GetOrAdd(pid_t pid, int status)
+{
+	auto item = _runtimeInfo.find(pid);
+
+	if(item!= _runtimeInfo.end()) {
 		return item->second;
+	} else {
+		_log.Debug("ProgRuntimeDispatcher GetOrAdd:", pid);
+	}
 
-	ProgRuntimeHandler *progRuntimeHandler = new ProgRuntimeHandler(pid, status, _deviceHandlerFactory); 
-	_runtimeInfo.insert(pair<pid_t, ProgRuntimeHandler*>(pid, progRuntimeHandler)); 
+	auto progRuntimeHandler = std::make_shared<ProgRuntimeHandler>(pid, status, _deviceHandlerFactory, shared_from_this()); 
+	_runtimeInfo.emplace(pid, progRuntimeHandler);
 
 	_numberOfProcesses++;
 	ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD|
@@ -58,11 +71,10 @@ ProgRuntimeHandler *ProgRuntimeDispatcher::GetOrAdd(pid_t pid, int status)
 
 void ProgRuntimeDispatcher::Drop(pid_t pid)
 {
-	map<pid_t, ProgRuntimeHandler*>::iterator item = _runtimeInfo.find(pid);
+	auto item = _runtimeInfo.find(pid);
 
 	if(item!= _runtimeInfo.end())
 	{
-		delete item->second;
 		_runtimeInfo.erase(item);
 		_numberOfProcesses--;
 	}
@@ -83,7 +95,7 @@ bool ProgRuntimeDispatcher::Step()
 			return false;
 	}
 	
-	ProgRuntimeHandler *progRuntimeHandler = GetOrAdd(pid, status);
+	auto progRuntimeHandler = GetOrAdd(pid, status);
 
 	unsigned int event = (unsigned int)status>>16;
 

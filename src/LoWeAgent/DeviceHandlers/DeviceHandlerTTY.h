@@ -12,8 +12,8 @@ class DeviceHandlerTTY : public DeviceHandler
 
 		virtual bool IsDeviceAvailable() override;
 		virtual string GetFixupScript() const override;
-		virtual void ExecuteBefore(const long syscall, user_regs_struct &regs) override;
-		virtual void ExecuteAfter(const long syscall, user_regs_struct &regs) override;
+		virtual void ExecuteBefore(pid_t pid, const long syscall, user_regs_struct &regs) override;
+		virtual void ExecuteAfter(pid_t pid, const long syscall, user_regs_struct &regs) override;
 
 	private:
 		long _ioctlop;

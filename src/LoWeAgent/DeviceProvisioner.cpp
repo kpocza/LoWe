@@ -5,6 +5,7 @@
 #include "SocketCommunicator.h"
 #include "Log.h"
 #include <string.h>
+#include <memory>
 
 DeviceProvisioner::DeviceProvisioner(const DeviceHandlerFactory &deviceHandlerFactory) :
 	_deviceHandlerFactory(deviceHandlerFactory)
@@ -19,7 +20,7 @@ bool DeviceProvisioner::EnsureExposer(const list<string> &devicesToSpy, const in
 	set<string> exposerIds;
 	for(list<string>::const_iterator path = devicesToSpy.begin();path!= devicesToSpy.end();path++)
 	{
-		DeviceHandler *deviceHandler = _deviceHandlerFactory.Create(*path, -1);
+		auto deviceHandler = _deviceHandlerFactory.Create(*path, -1);
 
 		string exposerId = deviceHandler->GetExposerId();
 		if(exposerId.size() == 4)
@@ -85,7 +86,7 @@ bool DeviceProvisioner::EnsureExposer(const list<string> &devicesToSpy, const in
 
 	for(list<string>::const_iterator path = devicesToSpy.begin();path!= devicesToSpy.end();path++)
 	{
-		DeviceHandler *deviceHandler = _deviceHandlerFactory.Create(*path, -1);
+		auto deviceHandler = _deviceHandlerFactory.Create(*path, -1);
 
 		string exposerId = deviceHandler->GetExposerId();
 		if(exposerId.size() != 4)
@@ -106,7 +107,7 @@ bool DeviceProvisioner::EnsureExposer(const list<string> &devicesToSpy, const in
 			return false;
 		}
 
-		CommunicatingDeviceHandler *dhc = dynamic_cast<CommunicatingDeviceHandler*>(deviceHandler);
+		auto dhc = std::static_pointer_cast<CommunicatingDeviceHandler>(deviceHandler);
 		if(dhc != NULL)
 		{
 			log.Debug("Setting up port", response->second, "for", exposerId);
@@ -125,14 +126,13 @@ bool DeviceProvisioner::CheckAvailability(const list<string> &devicesToSpy)
 	bool allOk = true;
 	for(list<string>::const_iterator path = devicesToSpy.begin();path!= devicesToSpy.end();path++)
 	{
-		DeviceHandler *deviceHandler = _deviceHandlerFactory.Create(*path, -1);
+		auto deviceHandler = _deviceHandlerFactory.Create(*path, -1);
 		log.Debug("Examining device:", deviceHandler->GetExposerId());
 		if(!deviceHandler->IsDeviceAvailable())
 		{
 			_fixupScript+= deviceHandler->GetFixupScript();
 			allOk = false;
 		}
-		delete deviceHandler;
 	}
 
 	return allOk;
