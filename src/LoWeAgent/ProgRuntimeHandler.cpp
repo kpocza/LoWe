@@ -1,12 +1,15 @@
 #include <sys/ptrace.h>
 #include <sys/syscall.h>
 #include <sys/reg.h>
+#include <sys/uio.h>
 #include "ProgRuntimeHandler.h"
 #include "DeviceHandlerFactory.h"
 
 #include <memory>
 #include <sys/epoll.h>
 #include <sched.h>
+
+#include <math.h>
 
 ProgRuntimeHandler::ProgRuntimeHandler(pid_t pid, int status, DeviceHandlerFactory &deviceHandlerFactory, std::weak_ptr<ProgRuntimeDispatcher> runtimeDispatcher): 
 	_runtimeDispatcher(runtimeDispatcher), _pid(pid), _status(status), _deviceHandlerFactory(deviceHandlerFactory), _log(Log("runtime", pid))	
@@ -50,6 +53,28 @@ void pokeData(long pid, long addr, const void *dataInput, int len)
 			lastChunk[i] = data[fullChunksEnd + i];
 		ptrace(PTRACE_POKEDATA, pid, addr + fullChunksEnd, *(long *)(char *)&lastChunk);
 	}
+}
+
+void peekData(pid_t pid, long addr, void *dataOutput, int len) {
+	struct iovec local, remote;
+
+	local.iov_base = dataOutput;
+	local.iov_len = len;
+	remote.iov_base = (void *)addr;
+	remote.iov_len = len;
+
+	process_vm_readv(pid, &local, 1, &remote, 1, 0);
+}
+
+long getTimeMillisec()
+{
+	struct timespec spec;
+	clock_gettime(CLOCK_REALTIME, &spec);
+
+	long s = (long)spec.tv_sec;
+	long ms = round(spec.tv_nsec / 1000000);
+
+	return 1000 * s + ms;
 }
 
 bool ProgRuntimeHandler::SpySyscallEnter()
@@ -112,18 +137,23 @@ bool ProgRuntimeHandler::SpySyscallEnter()
 			_currentDeviceHandler = _deviceHandlerRegistry->Lookup(fd);
 			_log.Debug("epoll", _currentDeviceHandler);
 
-			auto& fdset = epollList[regs.rdi];
+			auto& fdmap = epollList[regs.rdi];
 
 			switch(regs.rsi) {
 				case EPOLL_CTL_ADD:
-					fdset.emplace(regs.rdx);
+					{
+						auto eventData = std::make_shared<EventData>();
+						eventData->lastAccess = 0;
+						peekData(_pid, regs.rcx, &eventData->event, sizeof(epoll_event));
+						fdmap.emplace(regs.rdx, eventData);
+					}
 					_log.Debug("-= add =- epfd:", regs.rdi, " for fd:", regs.rdx);
 					break;
 				case EPOLL_CTL_DEL:
 					{
-						auto localSetIt = fdset.find(regs.rdx);
-						if(localSetIt != fdset.end()) {
-							fdset.erase(localSetIt);
+						auto localSetIt = fdmap.find(regs.rdx);
+						if(localSetIt != fdmap.end()) {
+							fdmap.erase(localSetIt);
 						}
 					}
 					_log.Debug("-= del =- epfd:", regs.rdi, " for fd:", regs.rdx);
@@ -210,7 +240,6 @@ bool ProgRuntimeHandler::SpySyscallExit()
 	}
 
 	if(syscall == SYS_epoll_wait) {
-#if 0
 		uint64_t currentEventCount = regs.rax;
 		uint64_t epfd = regs.rdi;
 
@@ -220,23 +249,36 @@ bool ProgRuntimeHandler::SpySyscallExit()
 
 		uint64_t eventArray = regs.rsi;
 		auto fdset = epollList.find(epfd);
+		currentEventCount = 0;
+		auto t = getTimeMillisec();
 		if(fdset != epollList.end()) {
-			for(auto& fd : fdset->second) {
+			for(auto& evt : fdset->second) {
+				auto fd = evt.first;
 				auto devptr = _deviceHandlerRegistry->Lookup(fd);
 				if((devptr != nullptr) && (currentEventCount < maxEvents)) {
-					_log.Debug("  -- adding event for ", fd);
-					struct epoll_event anEvent{};
-					anEvent.events = EPOLLIN;
-					anEvent.data.fd = fd;
-					pokeData(_pid, eventArray + (sizeof(struct epoll_event) * currentEventCount), &anEvent, sizeof(anEvent));
-					++currentEventCount;
+					if(evt.second->lastAccess + 50 < t) {
+						_log.Debug("  -- adding event for ", fd);
+						struct epoll_event anEvent{};
+						anEvent.events = EPOLLIN;
+						anEvent.data.fd = fd;
+						anEvent.data.ptr = evt.second->event.data.ptr;
+						anEvent.data.u32 = evt.second->event.data.u32;
+						anEvent.data.u64 = evt.second->event.data.u64;
+						evt.second->lastAccess = t;
+						pokeData(_pid, eventArray + (sizeof(struct epoll_event) * 
+								currentEventCount), &anEvent, sizeof(anEvent));
+						++currentEventCount;
+					}
 				}
 			}
 		}
-		regs.rax = currentEventCount;
+		if(currentEventCount > 0)
+		{
+			_log.Debug("  Custom handled event count", currentEventCount);
+			regs.rax = currentEventCount;
 
-		ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
-#endif
+			ptrace(PTRACE_SETREGS, _pid, NULL, &regs);
+		}
 	}
 
 

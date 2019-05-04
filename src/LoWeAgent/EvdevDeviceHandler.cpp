@@ -157,13 +157,13 @@ void EvdevDeviceHandler::ExecuteBefore(pid_t pid, const long syscall, user_regs_
 	}
 	else if(syscall == SYS_read)
 	{
-		//_log.Debug("-= Before read =-");
-		//_log.Debug("Read regs. rdi:", regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx);
+		_log.Debug("-= Before read =-");
+		_log.Debug("Read regs. rdi:", regs.rdi, "rsi:", regs.rsi, "rdx:", regs.rdx);
 
 		_readaddr = regs.rsi;
 		_readlen = regs.rdx;
 
-		//_log.Debug("Read size:", _readlen);
+		_log.Debug("Read size:", _readlen);
 
 		regs.orig_rax = -1;
 		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
@@ -380,7 +380,7 @@ void EvdevDeviceHandler::ExecuteAfter(pid_t pid, const long syscall, user_regs_s
 	}
 	else if(_syscallbefore == SYS_read)
 	{
-		//_log.Debug("-= After read =-");
+		_log.Debug("-= After read =-");
 
 		ReadLogic(pid, regs);
 	}

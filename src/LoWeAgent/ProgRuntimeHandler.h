@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sys/user.h>
+#include <sys/epoll.h>
 #include "DeviceHandlerRegistry.h"
 #include "DeviceHandlerFactory.h"
 #include "DeviceHandler.h"
@@ -12,10 +13,16 @@
 class DeviceHandlerRegistry;
 class ProgRuntimeDispatcher;
 
+struct EventData {
+	epoll_event event;
+	long lastAccess;
+};
+
 class ProgRuntimeHandler 
 {
 	public:
-		ProgRuntimeHandler(pid_t pid, int status, DeviceHandlerFactory &deviceHandlerFactory, std::weak_ptr<ProgRuntimeDispatcher> runtimeDispatcher);
+		ProgRuntimeHandler(pid_t pid, int status, DeviceHandlerFactory &deviceHandlerFactory, 
+				std::weak_ptr<ProgRuntimeDispatcher> runtimeDispatcher);
 
 		bool Step();
 
@@ -42,6 +49,6 @@ class ProgRuntimeHandler
 		std::shared_ptr<DeviceHandler> _currentDeviceHandler;
 		unordered_set<int> maskedSysCallsForDebug;
 
-		unordered_map<uint64_t, unordered_set<uint64_t>> epollList;
+		unordered_map<uint64_t, unordered_map<uint64_t, std::shared_ptr<EventData>>> epollList;
 };
 
