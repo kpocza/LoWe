@@ -225,6 +225,10 @@ void DeviceHandlerALSA::ExecuteBeforePCM(pid_t pid, const long syscall, user_reg
 		{
 			_log.Info("-= Before PCM Device ioctl - SNDRV_PCM_IOCTL_RESUME =-");
 		}
+		else if(_ioctlop == SNDRV_PCM_IOCTL_DRAIN)
+		{
+			_log.Info("-= Before PCM Device ioctl - SNDRV_PCM_IOCTL_DRAIN =-");
+		}
 		else 
 		{
 			_log.Error("unknown ioctl op ", _ioctlop);
@@ -285,6 +289,8 @@ void DeviceHandlerALSA::ExecuteAfterPCM(pid_t pid, const long syscall, user_regs
 		{
 			_log.Debug("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_SYNC_PTR =-");
 			PeekData(pid, _ioctladdr, &_pcm_sync_ptr, sizeof(_pcm_sync_ptr));
+			_pcm_sync_ptr.s.status.state = _snd_pcm_status.state;
+			PokeData(pid, _ioctladdr, &_pcm_sync_ptr, sizeof(_pcm_sync_ptr));
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_HW_REFINE)
@@ -347,6 +353,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(pid_t pid, const long syscall, user_regs
 		else if(_ioctlop == SNDRV_PCM_IOCTL_PREPARE)
 		{
 			_log.Info("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_PREPARE =-");
+			_snd_pcm_status.state = SNDRV_PCM_STATE_PREPARED;
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_STATUS)
@@ -438,6 +445,7 @@ void DeviceHandlerALSA::ExecuteAfterPCM(pid_t pid, const long syscall, user_regs
 
 			xferi.result = xferi.frames;
 			PokeData(pid, _ioctladdr, &xferi, sizeof(xferi));
+			_snd_pcm_status.state = SNDRV_PCM_STATE_RUNNING;
 			regs.rax = 0;
 		}
 		else if(_ioctlop == SNDRV_PCM_IOCTL_PAUSE)
@@ -452,6 +460,11 @@ void DeviceHandlerALSA::ExecuteAfterPCM(pid_t pid, const long syscall, user_regs
 			_log.Info("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_RESUME =-");
 			SendOpcode("RESU");
 			_snd_pcm_status.state = SNDRV_PCM_STATE_RUNNING;
+			regs.rax = 0;
+		}
+		else if(_ioctlop == SNDRV_PCM_IOCTL_DRAIN)
+		{
+			_log.Info("-= After PCM Device ioctl - SNDRV_PCM_IOCTL_DRAIN =-");
 			regs.rax = 0;
 		}
 		ptrace(PTRACE_SETREGS, pid, NULL, &regs);
