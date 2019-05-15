@@ -1,4 +1,4 @@
-# Running graphical apps on Unity on X.Org (W10 RedStone 2 - Ubuntu 16 LTS)
+# Running graphical apps on Unity on X.Org (W10 RedStone 2+ - Ubuntu 16 LTS, W10 RedStone 5+ - Ubuntu 18 LTS)
 
 Executing X-based graphical apps is a bit circumstantial at the moment. Simplification is expected in the future.
 
@@ -25,7 +25,7 @@ sudo apt install unity
    ![xorgconfig](img/x/01_config.jpg "X.Org config")
 
 
-   *If you are upgrading from W10 Anniversary Update please add the UseSIGIO option as seen above unless you do the copying mentioned above.*
+   *If you are running Ubuntu 16 LTS please ensure to have UseSIGIO option as seen above, however in case of Ubuntu 18 LTS UseSIGIO should not present.*
 
 3. Install any additional packages, eg. xterm, firefox, libreoffice, etc.
 
@@ -44,7 +44,7 @@ Please follow these steps:
 
 3. loweagent is not a generic application yet, so it is prepared to support some predefined applications, like mplayer or x. Please refer to loweagent.conf.
 
-4. Enter ```loweagent -e X -o x.log``` command in the first Bash to execute LoWeAgent that will actually execute X server as well. To be more precise it will do the following actions:
+4. Enter ```loweagent -e X -o x.log``` command for Ubuntu 16 and ```sudo loweagent -e X -o x.log``` for Ubuntu 18 in the first Bash to execute LoWeAgent that will actually execute X server as well. To be more precise it will do the following actions:
 
    1. Detect if any devices require coordination with LoWeExposer
    2. Check if all regular files that mimic the original /dev file exist
